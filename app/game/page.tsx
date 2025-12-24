@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
@@ -9,7 +9,7 @@ import VoteCard from '@/components/VoteCard';
 import PlayerSelect from '@/components/PlayerSelect';
 import Loading from '@/components/Loading';
 import { Player, Question, GameSession } from '@/types';
-import { RotateCcw, User, LogOut } from 'lucide-react';
+import { RotateCcw, LogOut } from 'lucide-react';
 
 export default function GamePage() {
   const router = useRouter();
@@ -23,6 +23,9 @@ export default function GamePage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [changingVote, setChangingVote] = useState(false);
   const [votedQuestions, setVotedQuestions] = useState<Record<number, number>>({});
+  
+  // Track current question to detect changes
+  const lastQuestionIndex = useRef<number>(-1);
   
   // Current user (player)
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
@@ -49,14 +52,30 @@ export default function GamePage() {
     try {
       const res = await fetch('/api/session');
       const data = await res.json();
+      
+      // Detect question change - reset timer from server
+      if (lastQuestionIndex.current !== -1 && lastQuestionIndex.current !== data.currentQuestionIndex) {
+        // Question changed! Use server's remaining time
+        setTimeLeft(data.remainingSeconds || 0);
+        setHasVoted(false);
+        setSelectedVote(null);
+      }
+      
+      lastQuestionIndex.current = data.currentQuestionIndex;
       setSession(data);
-      setTimeLeft(data.remainingSeconds || 0);
+      
+      // Only set timeLeft if it's significantly different (avoid drift)
+      // Or if this is initial load
+      if (Math.abs((data.remainingSeconds || 0) - timeLeft) > 3 || timeLeft === 0) {
+        setTimeLeft(data.remainingSeconds || 0);
+      }
+      
       return data;
     } catch (error) {
       console.error('Failed to fetch session:', error);
       return null;
     }
-  }, []);
+  }, [timeLeft]);
 
   // Fetch vote status from database
   const fetchVoteStatus = useCallback(async (playerId: number) => {
@@ -82,7 +101,13 @@ export default function GamePage() {
         
         setPlayers(await playersRes.json());
         setQuestions(await questionsRes.json());
-        await fetchSession();
+        
+        // Fetch session and set initial timer
+        const sessionData = await fetchSession();
+        if (sessionData) {
+          setTimeLeft(sessionData.remainingSeconds || 0);
+          lastQuestionIndex.current = sessionData.currentQuestionIndex;
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -91,7 +116,7 @@ export default function GamePage() {
     }
     
     fetchData();
-  }, [fetchSession]);
+  }, []);
 
   // Fetch vote status when player is set
   useEffect(() => {
@@ -100,9 +125,9 @@ export default function GamePage() {
     }
   }, [currentPlayer, fetchVoteStatus]);
 
-  // Refresh session periodically
+  // Refresh session periodically - and sync timer
   useEffect(() => {
-    const interval = setInterval(fetchSession, 5000);
+    const interval = setInterval(fetchSession, 3000);
     return () => clearInterval(interval);
   }, [fetchSession]);
 
@@ -128,13 +153,13 @@ export default function GamePage() {
 
   // Auto-redirect when timer ends
   useEffect(() => {
-    if (session && timeLeft === 0 && session.status === 'voting') {
+    if (session && timeLeft === 0 && session.status === 'voting' && hasVoted) {
       const timeout = setTimeout(() => {
         router.push(`/results?q=${session.currentQuestionIndex}`);
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [timeLeft, session, router]);
+  }, [timeLeft, session, router, hasVoted]);
 
   // Handle player selection
   const handlePlayerSelect = (player: Player) => {

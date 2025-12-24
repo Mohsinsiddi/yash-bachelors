@@ -1,385 +1,16 @@
 #!/bin/bash
 
 # ================================================================
-# 👤 PLAYER REGISTRATION - Select Name Before Voting
+# 🔧 FIX TIMER RESET ON QUESTION CHANGE
 # Run this inside your brutal-awards folder
 # ================================================================
 
-echo "👤 Adding Player Registration..."
-echo "================================="
-
-# ================================================================
-# 1. CREATE: Player Selection Component
-# ================================================================
-echo "1️⃣ Creating Player Selection component..."
-
-cat > components/PlayerSelect.tsx << 'EOF'
-'use client';
-
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Check, AlertCircle } from 'lucide-react';
-import { Player } from '@/types';
-
-interface PlayerSelectProps {
-  players: Player[];
-  onSelect: (player: Player) => void;
-  onCancel?: () => void;
-}
-
-export default function PlayerSelect({ players, onSelect, onCancel }: PlayerSelectProps) {
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [step, setStep] = useState<'select' | 'confirm'>('select');
-
-  const handlePlayerClick = (player: Player) => {
-    setSelectedPlayer(player);
-    setStep('confirm');
-  };
-
-  const handleConfirm = () => {
-    if (selectedPlayer) {
-      onSelect(selectedPlayer);
-    }
-  };
-
-  const handleBack = () => {
-    setStep('select');
-    setSelectedPlayer(null);
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm"
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        className="w-full max-w-lg bg-dark-card border border-white/10 rounded-2xl overflow-hidden"
-      >
-        <AnimatePresence mode="wait">
-          {step === 'select' ? (
-            <motion.div
-              key="select"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="p-6"
-            >
-              {/* Header */}
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-3">👋</div>
-                <h2 className="font-display text-2xl gradient-text mb-2">Who Are You?</h2>
-                <p className="text-zinc-400 text-sm">Select your name to start voting</p>
-              </div>
-              
-              {/* Player Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[50vh] overflow-y-auto p-1">
-                {players.map((player) => (
-                  <button
-                    key={player.id}
-                    onClick={() => handlePlayerClick(player)}
-                    className="p-4 rounded-xl bg-dark-elevated hover:bg-purple-500/20 border-2 border-transparent hover:border-purple-500/50 transition-all text-center"
-                  >
-                    <span className="text-3xl block mb-2">{player.emoji}</span>
-                    <span className="font-medium text-sm">{player.name}</span>
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="confirm"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="p-6"
-            >
-              {/* Confirmation */}
-              <div className="text-center">
-                <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-yellow-500/20 to-purple-500/20 flex items-center justify-center">
-                  <span className="text-5xl">{selectedPlayer?.emoji}</span>
-                </div>
-                
-                <h2 className="font-display text-2xl mb-2">You are</h2>
-                <p className="font-display text-3xl gradient-text mb-6">{selectedPlayer?.name}?</p>
-                
-                <div className="p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-xl mb-6">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="text-yellow-400 flex-shrink-0 mt-0.5" size={20} />
-                    <div className="text-left">
-                      <p className="text-yellow-400 font-medium text-sm mb-1">Important!</p>
-                      <p className="text-yellow-300/70 text-xs">
-                        Your votes will be tracked under this name. 
-                        Make sure you select YOUR name, not someone else's!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleBack}
-                    className="flex-1 px-6 py-3 rounded-xl bg-dark-elevated hover:bg-white/10 transition-colors text-zinc-300"
-                  >
-                    ← Go Back
-                  </button>
-                  <button
-                    onClick={handleConfirm}
-                    className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold flex items-center justify-center gap-2"
-                  >
-                    <Check size={20} />
-                    Yes, That's Me!
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </motion.div>
-  );
-}
-EOF
-
-echo "   ✅ PlayerSelect component created"
-
-# ================================================================
-# 2. UPDATE: Vote Model - Track voter as player ID
-# ================================================================
-echo "2️⃣ Updating Vote model..."
-
-cat > lib/models/Vote.ts << 'EOF'
-import mongoose, { Schema, Document } from 'mongoose';
-
-export interface IVote extends Document {
-  odcId: string;
-  questionId: number;
-  
-  // Voter identification
-  
-  voterId: number;         // Player ID of the voter
-  voterName: string;       // Player name (for easy queries)
-  
-  // Vote target
-  votedForId: number;      // Player ID they voted for
-  votedForName: string;    // Player name (for easy queries)
-  
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const VoteSchema = new Schema<IVote>({
-  odcId: { type: String, default: '' },
-  questionId: { type: Number, required: true },
-  
-  voterId: { type: Number, required: true },
-  voterName: { type: String, required: true },
-  
-  votedForId: { type: Number, required: true },
-  votedForName: { type: String, default: '' },
-}, { timestamps: true });
-
-// Unique constraint: one vote per voter per question
-VoteSchema.index({ voterId: 1, questionId: 1 }, { unique: true });
-
-export const VoteModel = mongoose.models.Vote || mongoose.model<IVote>('Vote', VoteSchema);
-EOF
-
-echo "   ✅ Vote model updated"
-
-# ================================================================
-# 3. UPDATE: Votes API
-# ================================================================
-echo "3️⃣ Updating Votes API..."
-
-cat > app/api/votes/route.ts << 'EOF'
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { VoteModel, PlayerModel } from '@/lib/models';
-
-// GET votes
-export async function GET(request: Request) {
-  try {
-    await dbConnect();
-    const { searchParams } = new URL(request.url);
-    const questionId = searchParams.get('questionId');
-    const voterId = searchParams.get('voterId');
-    const detailed = searchParams.get('detailed') === 'true';
-    
-    const query: any = {};
-    if (questionId) query.questionId = parseInt(questionId);
-    if (voterId) query.voterId = parseInt(voterId);
-    
-    const votes = await VoteModel.find(query).sort({ createdAt: -1 });
-    
-    // Calculate vote counts per player
-    const voteCount: Record<number, number> = {};
-    votes.forEach(vote => {
-      voteCount[vote.votedForId] = (voteCount[vote.votedForId] || 0) + 1;
-    });
-    
-    // If detailed, include who voted for whom
-    let voteDetails: any[] = [];
-    if (detailed) {
-      voteDetails = votes.map(v => ({
-        voter: { id: v.voterId, name: v.voterName },
-        votedFor: { id: v.votedForId, name: v.votedForName },
-        questionId: v.questionId,
-        time: v.createdAt,
-      }));
-    }
-    
-    return NextResponse.json({ 
-      votes: detailed ? voteDetails : votes,
-      voteCount,
-      total: votes.length 
-    });
-  } catch (error) {
-    console.error('Failed to fetch votes:', error);
-    return NextResponse.json({ error: 'Failed to fetch votes' }, { status: 500 });
-  }
-}
-
-// POST - Create or update vote
-export async function POST(request: Request) {
-  try {
-    await dbConnect();
-    const body = await request.json();
-    const { questionId, voterId, voterName, votedForId } = body;
-    
-    if (!questionId || !voterId || !voterName || !votedForId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-    
-    // Get voted-for player name
-    const votedForPlayer = await PlayerModel.findOne({ id: votedForId });
-    const votedForName = votedForPlayer?.name || '';
-    
-    // Upsert - update if exists, create if not
-    const vote = await VoteModel.findOneAndUpdate(
-      { voterId, questionId },
-      { 
-        questionId, 
-        voterId, 
-        voterName,
-        votedForId, 
-        votedForName,
-        odcId: `vote_${voterId}_${questionId}_${Date.now()}`
-      },
-      { upsert: true, new: true }
-    );
-    
-    return NextResponse.json({ success: true, vote });
-  } catch (error) {
-    console.error('Failed to save vote:', error);
-    return NextResponse.json({ error: 'Failed to save vote' }, { status: 500 });
-  }
-}
-
-// DELETE - Remove vote(s)
-export async function DELETE(request: Request) {
-  try {
-    await dbConnect();
-    const { searchParams } = new URL(request.url);
-    
-    const questionId = searchParams.get('questionId');
-    const voterId = searchParams.get('voterId');
-    const all = searchParams.get('all');
-    
-    let result;
-    
-    // Delete specific vote by voter + question
-    if (voterId && questionId) {
-      result = await VoteModel.deleteOne({ 
-        voterId: parseInt(voterId), 
-        questionId: parseInt(questionId) 
-      });
-      return NextResponse.json({ 
-        success: true, 
-        deleted: result.deletedCount,
-        message: 'Your vote has been removed'
-      });
-    }
-    
-    // Delete all votes for a question (admin)
-    if (questionId && !voterId) {
-      result = await VoteModel.deleteMany({ questionId: parseInt(questionId) });
-      return NextResponse.json({ success: true, deleted: result.deletedCount });
-    }
-    
-    // Delete all votes (admin)
-    if (all === 'true') {
-      result = await VoteModel.deleteMany({});
-      return NextResponse.json({ success: true, deleted: result.deletedCount });
-    }
-    
-    return NextResponse.json({ error: 'No delete criteria provided' }, { status: 400 });
-  } catch (error) {
-    console.error('Failed to delete vote:', error);
-    return NextResponse.json({ error: 'Failed to delete vote' }, { status: 500 });
-  }
-}
-EOF
-
-echo "   ✅ Votes API updated"
-
-# ================================================================
-# 4. UPDATE: Vote Status API
-# ================================================================
-echo "4️⃣ Updating Vote Status API..."
-
-mkdir -p app/api/votes/status
-
-cat > app/api/votes/status/route.ts << 'EOF'
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { VoteModel } from '@/lib/models';
-
-// GET - Check which questions a player has voted on
-export async function GET(request: Request) {
-  try {
-    await dbConnect();
-    const { searchParams } = new URL(request.url);
-    const voterId = searchParams.get('voterId');
-    
-    if (!voterId) {
-      return NextResponse.json({ error: 'voterId required' }, { status: 400 });
-    }
-    
-    // Get all votes by this voter (player)
-    const votes = await VoteModel.find({ voterId: parseInt(voterId) });
-    
-    // Build a map of questionId -> votedForId
-    const votedQuestions: Record<number, number> = {};
-    votes.forEach(vote => {
-      votedQuestions[vote.questionId] = vote.votedForId;
-    });
-    
-    return NextResponse.json({
-      voterId: parseInt(voterId),
-      votedQuestions,
-      totalVotes: votes.length,
-    });
-  } catch (error) {
-    console.error('Vote status error:', error);
-    return NextResponse.json({ error: 'Failed to fetch vote status' }, { status: 500 });
-  }
-}
-EOF
-
-echo "   ✅ Vote Status API updated"
-
-# ================================================================
-# 5. UPDATE: Game Page - Use Player Registration
-# ================================================================
-echo "5️⃣ Updating Game page..."
+echo "🔧 Fixing Timer Reset..."
 
 cat > app/game/page.tsx << 'EOF'
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
@@ -388,7 +19,7 @@ import VoteCard from '@/components/VoteCard';
 import PlayerSelect from '@/components/PlayerSelect';
 import Loading from '@/components/Loading';
 import { Player, Question, GameSession } from '@/types';
-import { RotateCcw, User, LogOut } from 'lucide-react';
+import { RotateCcw, LogOut } from 'lucide-react';
 
 export default function GamePage() {
   const router = useRouter();
@@ -402,6 +33,9 @@ export default function GamePage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [changingVote, setChangingVote] = useState(false);
   const [votedQuestions, setVotedQuestions] = useState<Record<number, number>>({});
+  
+  // Track current question to detect changes
+  const lastQuestionIndex = useRef<number>(-1);
   
   // Current user (player)
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
@@ -428,14 +62,30 @@ export default function GamePage() {
     try {
       const res = await fetch('/api/session');
       const data = await res.json();
+      
+      // Detect question change - reset timer from server
+      if (lastQuestionIndex.current !== -1 && lastQuestionIndex.current !== data.currentQuestionIndex) {
+        // Question changed! Use server's remaining time
+        setTimeLeft(data.remainingSeconds || 0);
+        setHasVoted(false);
+        setSelectedVote(null);
+      }
+      
+      lastQuestionIndex.current = data.currentQuestionIndex;
       setSession(data);
-      setTimeLeft(data.remainingSeconds || 0);
+      
+      // Only set timeLeft if it's significantly different (avoid drift)
+      // Or if this is initial load
+      if (Math.abs((data.remainingSeconds || 0) - timeLeft) > 3 || timeLeft === 0) {
+        setTimeLeft(data.remainingSeconds || 0);
+      }
+      
       return data;
     } catch (error) {
       console.error('Failed to fetch session:', error);
       return null;
     }
-  }, []);
+  }, [timeLeft]);
 
   // Fetch vote status from database
   const fetchVoteStatus = useCallback(async (playerId: number) => {
@@ -461,7 +111,13 @@ export default function GamePage() {
         
         setPlayers(await playersRes.json());
         setQuestions(await questionsRes.json());
-        await fetchSession();
+        
+        // Fetch session and set initial timer
+        const sessionData = await fetchSession();
+        if (sessionData) {
+          setTimeLeft(sessionData.remainingSeconds || 0);
+          lastQuestionIndex.current = sessionData.currentQuestionIndex;
+        }
       } catch (error) {
         console.error('Failed to fetch data:', error);
       } finally {
@@ -470,7 +126,7 @@ export default function GamePage() {
     }
     
     fetchData();
-  }, [fetchSession]);
+  }, []);
 
   // Fetch vote status when player is set
   useEffect(() => {
@@ -479,9 +135,9 @@ export default function GamePage() {
     }
   }, [currentPlayer, fetchVoteStatus]);
 
-  // Refresh session periodically
+  // Refresh session periodically - and sync timer
   useEffect(() => {
-    const interval = setInterval(fetchSession, 5000);
+    const interval = setInterval(fetchSession, 3000);
     return () => clearInterval(interval);
   }, [fetchSession]);
 
@@ -507,13 +163,13 @@ export default function GamePage() {
 
   // Auto-redirect when timer ends
   useEffect(() => {
-    if (session && timeLeft === 0 && session.status === 'voting') {
+    if (session && timeLeft === 0 && session.status === 'voting' && hasVoted) {
       const timeout = setTimeout(() => {
         router.push(`/results?q=${session.currentQuestionIndex}`);
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [timeLeft, session, router]);
+  }, [timeLeft, session, router, hasVoted]);
 
   // Handle player selection
   const handlePlayerSelect = (player: Player) => {
@@ -828,208 +484,7 @@ export default function GamePage() {
 }
 EOF
 
-echo "   ✅ Game page updated"
-
-# ================================================================
-# 6. CREATE: Vote Tracking API (Admin - Who voted for whom)
-# ================================================================
-echo "6️⃣ Creating Vote Tracking API..."
-
-mkdir -p app/api/admin/vote-tracking
-
-cat > app/api/admin/vote-tracking/route.ts << 'EOF'
-import { NextResponse } from 'next/server';
-import dbConnect from '@/lib/mongodb';
-import { VoteModel, QuestionModel, PlayerModel } from '@/lib/models';
-
-// GET - Get detailed vote tracking (who voted for whom)
-export async function GET(request: Request) {
-  try {
-    await dbConnect();
-    const { searchParams } = new URL(request.url);
-    const questionId = searchParams.get('questionId');
-    
-    const query: any = {};
-    if (questionId) query.questionId = parseInt(questionId);
-    
-    const [votes, questions, players] = await Promise.all([
-      VoteModel.find(query).sort({ questionId: 1, createdAt: 1 }),
-      QuestionModel.find({ isActive: true }).sort({ order: 1 }),
-      PlayerModel.find({ isActive: true }).sort({ id: 1 }),
-    ]);
-    
-    // Group votes by question
-    const votesByQuestion: Record<number, any[]> = {};
-    
-    votes.forEach(vote => {
-      if (!votesByQuestion[vote.questionId]) {
-        votesByQuestion[vote.questionId] = [];
-      }
-      votesByQuestion[vote.questionId].push({
-        voter: {
-          id: vote.voterId,
-          name: vote.voterName,
-        },
-        votedFor: {
-          id: vote.votedForId,
-          name: vote.votedForName,
-        },
-        time: vote.createdAt,
-      });
-    });
-    
-    // Build response with question details
-    const result = questions.map(q => ({
-      questionId: q.id,
-      question: q.question,
-      type: q.type,
-      order: q.order,
-      totalVotes: votesByQuestion[q.id]?.length || 0,
-      votes: votesByQuestion[q.id] || [],
-    }));
-    
-    return NextResponse.json({
-      questions: result,
-      players: players.map(p => ({ id: p.id, name: p.name, emoji: p.emoji })),
-      totalVotes: votes.length,
-    });
-  } catch (error) {
-    console.error('Vote tracking error:', error);
-    return NextResponse.json({ error: 'Failed to fetch vote tracking' }, { status: 500 });
-  }
-}
-EOF
-
-echo "   ✅ Vote Tracking API created"
-
-# ================================================================
-# 7. UPDATE: Clear Page - Remove old localStorage cleanup
-# ================================================================
-echo "7️⃣ Updating Clear page..."
-
-cat > app/clear/page.tsx << 'EOF'
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
-export default function ClearPage() {
-  const router = useRouter();
-  const [cleared, setCleared] = useState(false);
-  const [countdown, setCountdown] = useState(3);
-  const [playerName, setPlayerName] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Get current player name before clearing
-    const name = localStorage.getItem('currentPlayerName');
-    setPlayerName(name);
-    
-    // Clear player registration (this is the only localStorage we use now)
-    localStorage.removeItem('currentPlayerId');
-    localStorage.removeItem('currentPlayerName');
-    localStorage.removeItem('currentPlayerEmoji');
-    
-    // Also clear any legacy data
-    localStorage.removeItem('votedQuestions');
-    localStorage.removeItem('voterId');
-    localStorage.removeItem('odcId');
-    localStorage.removeItem('currentQuestion');
-    localStorage.removeItem('playerScores');
-    
-    setCleared(true);
-    
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          router.push('/game');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [router]);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0A0A0F]">
-      <div className="text-center">
-        {cleared ? (
-          <>
-            <div className="text-6xl mb-4">✅</div>
-            <h1 className="text-2xl font-bold text-green-400 mb-2">Session Cleared!</h1>
-            {playerName && (
-              <p className="text-zinc-400 mb-2">Goodbye, {playerName}!</p>
-            )}
-            <p className="text-zinc-500 mb-4">You can now register as a different player.</p>
-            <p className="text-zinc-600">Redirecting in {countdown}...</p>
-            <button 
-              onClick={() => router.push('/game')}
-              className="mt-4 px-6 py-3 bg-yellow-500 text-black rounded-full font-semibold"
-            >
-              Register Now →
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="text-6xl mb-4 animate-spin">🧹</div>
-            <h1 className="text-2xl font-bold text-white">Clearing session...</h1>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-EOF
-
-echo "   ✅ Clear page updated"
-
-# ================================================================
-# 8. CLEAR CACHE
-# ================================================================
-echo "8️⃣ Clearing cache..."
-
-rm -rf .next
-
-echo "   ✅ Cache cleared"
-
-# ================================================================
-# DONE
-# ================================================================
+echo "✅ Game page fixed - timer resets on question change!"
 echo ""
-echo "================================="
-echo "✅ Player Registration Added!"
-echo "================================="
-echo ""
-echo "👤 New Flow:"
-echo ""
-echo "   1. User opens /game"
-echo "   2. Popup: 'Who Are You?'"
-echo "   3. User selects name from list"
-echo "   4. Confirmation: 'You are Mohsin?'"
-echo "   5. Double confirm: 'Yes, That's Me!'"
-echo "   6. User can now vote"
-echo ""
-echo "📊 Vote Tracking:"
-echo ""
-echo "   • Each vote stores:"
-echo "     - voterId (player ID)"
-echo "     - voterName (player name)"
-echo "     - votedForId (target player ID)"
-echo "     - votedForName (target name)"
-echo ""
-echo "   • Admin can see who voted for whom:"
-echo "     GET /api/admin/vote-tracking"
-echo ""
-echo "🔒 localStorage Now Only Stores:"
-echo "   - currentPlayerId"
-echo "   - currentPlayerName"
-echo "   - currentPlayerEmoji"
-echo "   - adminAuth (for admin login)"
-echo ""
-echo "⚠️  IMPORTANT: Run seed to update Vote model!"
-echo "   /admin > DB > 🌱 Seed Default Data"
-echo ""
-echo "Now run: npm run dev"
-echo ""
+echo "Clear cache and restart:"
+echo "  rm -rf .next && npm run dev"
