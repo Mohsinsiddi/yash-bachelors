@@ -1,21 +1,34 @@
-import mongoose, { Schema, Model } from 'mongoose';
-import { Vote } from '@/types';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const VoteSchema = new Schema<Vote>({
-  odcId: { type: String, required: true },
+export interface IVote extends Document {
+  odcId: string;
+  questionId: number;
+  
+  // Voter identification
+  
+  voterId: number;         // Player ID of the voter
+  voterName: string;       // Player name (for easy queries)
+  
+  // Vote target
+  votedForId: number;      // Player ID they voted for
+  votedForName: string;    // Player name (for easy queries)
+  
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const VoteSchema = new Schema<IVote>({
+  odcId: { type: String, default: '' },
   questionId: { type: Number, required: true },
-  voterId: { type: String, required: true },
+  
+  voterId: { type: Number, required: true },
+  voterName: { type: String, required: true },
+  
   votedForId: { type: Number, required: true },
-  createdAt: { type: Date, default: Date.now },
-});
+  votedForName: { type: String, default: '' },
+}, { timestamps: true });
 
-// Unique vote per voter per question (not per session!)
-// This ensures each person can only vote once per question
-VoteSchema.index({ questionId: 1, voterId: 1 }, { unique: true });
+// Unique constraint: one vote per voter per question
+VoteSchema.index({ voterId: 1, questionId: 1 }, { unique: true });
 
-// Additional indexes for faster queries
-VoteSchema.index({ questionId: 1 });
-VoteSchema.index({ odcId: 1 });
-
-export const VoteModel: Model<Vote> = 
-  mongoose.models.Vote || mongoose.model<Vote>('Vote', VoteSchema);
+export const VoteModel = mongoose.models.Vote || mongoose.model<IVote>('Vote', VoteSchema);

@@ -6,32 +6,45 @@ import Header from '@/components/Header';
 import BottomNav from '@/components/BottomNav';
 import QuestionCard from '@/components/QuestionCard';
 import VoteCard from '@/components/VoteCard';
+import PlayerSelect from '@/components/PlayerSelect';
 import Loading from '@/components/Loading';
 import { Player, Question, GameSession } from '@/types';
+import { RotateCcw, User, LogOut } from 'lucide-react';
 
 export default function GamePage() {
   const router = useRouter();
   const [players, setPlayers] = useState<Player[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [session, setSession] = useState<GameSession & { remainingSeconds: number; isVotingOpen: boolean } | null>(null);
+  const [session, setSession] = useState<GameSession & { remainingSeconds: number } | null>(null);
   const [selectedVote, setSelectedVote] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
   const [timeLeft, setTimeLeft] = useState(0);
+  const [changingVote, setChangingVote] = useState(false);
+  const [votedQuestions, setVotedQuestions] = useState<Record<number, number>>({});
   
-  const [voterId] = useState(() => {
-    if (typeof window !== 'undefined') {
-      let id = localStorage.getItem('voterId');
-      if (!id) {
-        id = 'voter_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-        localStorage.setItem('voterId', id);
-      }
-      return id;
-    }
-    return 'voter_' + Math.random().toString(36).substr(2, 9);
-  });
+  // Current user (player)
+  const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
+  const [showPlayerSelect, setShowPlayerSelect] = useState(false);
 
+  // Load saved player from localStorage on mount
+  useEffect(() => {
+    const savedPlayerId = localStorage.getItem('currentPlayerId');
+    const savedPlayerName = localStorage.getItem('currentPlayerName');
+    const savedPlayerEmoji = localStorage.getItem('currentPlayerEmoji');
+    
+    if (savedPlayerId && savedPlayerName) {
+      setCurrentPlayer({
+        id: parseInt(savedPlayerId),
+        name: savedPlayerName,
+        emoji: savedPlayerEmoji || '😀',
+        isActive: true,
+      });
+    }
+  }, []);
+
+  // Fetch session
   const fetchSession = useCallback(async () => {
     try {
       const res = await fetch('/api/session');
@@ -45,6 +58,20 @@ export default function GamePage() {
     }
   }, []);
 
+  // Fetch vote status from database
+  const fetchVoteStatus = useCallback(async (playerId: number) => {
+    try {
+      const res = await fetch(`/api/votes/status?voterId=${playerId}`);
+      const data = await res.json();
+      setVotedQuestions(data.votedQuestions || {});
+      return data.votedQuestions || {};
+    } catch (error) {
+      console.error('Failed to fetch vote status:', error);
+      return {};
+    }
+  }, []);
+
+  // Initial data fetch
   useEffect(() => {
     async function fetchData() {
       try {
@@ -66,11 +93,20 @@ export default function GamePage() {
     fetchData();
   }, [fetchSession]);
 
+  // Fetch vote status when player is set
+  useEffect(() => {
+    if (currentPlayer) {
+      fetchVoteStatus(currentPlayer.id);
+    }
+  }, [currentPlayer, fetchVoteStatus]);
+
+  // Refresh session periodically
   useEffect(() => {
     const interval = setInterval(fetchSession, 5000);
     return () => clearInterval(interval);
   }, [fetchSession]);
 
+  // Countdown timer
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setInterval(() => {
@@ -80,15 +116,17 @@ export default function GamePage() {
     }
   }, [timeLeft]);
 
+  // Check if voted for current question
   useEffect(() => {
-    if (session && questions.length > 0) {
-      const votedQuestions = JSON.parse(localStorage.getItem('votedQuestions') || '{}');
+    if (session && currentPlayer) {
       const questionId = session.currentQuestionId;
-      setHasVoted(!!votedQuestions[questionId]);
-      setSelectedVote(votedQuestions[questionId] || null);
+      const votedFor = votedQuestions[questionId];
+      setHasVoted(!!votedFor);
+      setSelectedVote(votedFor || null);
     }
-  }, [session, questions]);
+  }, [session, currentPlayer, votedQuestions]);
 
+  // Auto-redirect when timer ends
   useEffect(() => {
     if (session && timeLeft === 0 && session.status === 'voting') {
       const timeout = setTimeout(() => {
@@ -98,37 +136,84 @@ export default function GamePage() {
     }
   }, [timeLeft, session, router]);
 
+  // Handle player selection
+  const handlePlayerSelect = (player: Player) => {
+    setCurrentPlayer(player);
+    localStorage.setItem('currentPlayerId', player.id.toString());
+    localStorage.setItem('currentPlayerName', player.name);
+    localStorage.setItem('currentPlayerEmoji', player.emoji);
+    setShowPlayerSelect(false);
+    fetchVoteStatus(player.id);
+  };
+
+  // Handle logout (switch player)
+  const handleLogout = () => {
+    localStorage.removeItem('currentPlayerId');
+    localStorage.removeItem('currentPlayerName');
+    localStorage.removeItem('currentPlayerEmoji');
+    setCurrentPlayer(null);
+    setVotedQuestions({});
+    setHasVoted(false);
+    setSelectedVote(null);
+  };
+
+  // Submit vote
   const handleSubmit = async () => {
-    if (!selectedVote || submitting || !session) return;
+    if (!selectedVote || submitting || !session || !currentPlayer) return;
     
     setSubmitting(true);
     
     try {
       const questionId = session.currentQuestionId;
-      const odcId = 'game_' + Date.now().toString(36);
       
       await fetch('/api/votes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          odcId,
           questionId,
-          voterId,
+          voterId: currentPlayer.id,
+          voterName: currentPlayer.name,
           votedForId: selectedVote,
         }),
       });
       
-      const votedQuestions = JSON.parse(localStorage.getItem('votedQuestions') || '{}');
-      votedQuestions[questionId] = selectedVote;
-      localStorage.setItem('votedQuestions', JSON.stringify(votedQuestions));
-      
+      // Update local state
+      setVotedQuestions(prev => ({ ...prev, [questionId]: selectedVote }));
       setHasVoted(true);
-      router.push(`/results?q=${session.currentQuestionIndex}`);
     } catch (error) {
       console.error('Failed to submit vote:', error);
       alert('Failed to submit vote. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Change vote
+  const handleChangeVote = async () => {
+    if (!session || changingVote || !currentPlayer) return;
+    
+    setChangingVote(true);
+    
+    try {
+      const questionId = session.currentQuestionId;
+      
+      await fetch(`/api/votes?voterId=${currentPlayer.id}&questionId=${questionId}`, {
+        method: 'DELETE',
+      });
+      
+      // Update local state
+      setVotedQuestions(prev => {
+        const updated = { ...prev };
+        delete updated[questionId];
+        return updated;
+      });
+      setHasVoted(false);
+      setSelectedVote(null);
+    } catch (error) {
+      console.error('Failed to change vote:', error);
+      alert('Failed to change vote. Please try again.');
+    } finally {
+      setChangingVote(false);
     }
   };
 
@@ -149,6 +234,19 @@ export default function GamePage() {
       <div className="min-h-screen flex items-center justify-center">
         <Loading />
       </div>
+    );
+  }
+
+  // Show player selection if not registered
+  if (!currentPlayer || showPlayerSelect) {
+    return (
+      <>
+        <Header />
+        <PlayerSelect 
+          players={players} 
+          onSelect={handlePlayerSelect}
+        />
+      </>
     );
   }
 
@@ -175,10 +273,10 @@ export default function GamePage() {
             <h1 className="font-display text-2xl sm:text-3xl gradient-text mb-4">Game Complete!</h1>
             <p className="text-zinc-400 mb-6 text-sm sm:text-base">All questions have been answered</p>
             <button 
-              onClick={() => router.push('/scoreboard?final=true')} 
+              onClick={() => router.push('/leaderboard')} 
               className="btn-gold px-6 py-3 sm:px-8 sm:py-4 rounded-full text-base sm:text-lg"
             >
-              View Final Scores
+              View Final Results
             </button>
           </div>
         </div>
@@ -189,6 +287,7 @@ export default function GamePage() {
 
   const currentQuestion = questions[session.currentQuestionIndex];
   const isVotingOpen = timeLeft > 0 && session.status === 'voting';
+  const votedPlayer = selectedVote ? players.find(p => p.id === selectedVote) : null;
 
   return (
     <>
@@ -196,12 +295,31 @@ export default function GamePage() {
       
       <div className="min-h-screen pt-16 sm:pt-20 pb-20 md:pb-8 px-3 sm:px-4">
         <div className="max-w-4xl mx-auto">
+          {/* Current Player Banner */}
+          <div className="mb-4 p-3 bg-dark-card border border-white/10 rounded-xl flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center text-xl">
+                {currentPlayer.emoji}
+              </div>
+              <div>
+                <p className="text-xs text-zinc-500">Playing as</p>
+                <p className="font-semibold text-sm">{currentPlayer.name}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            >
+              <LogOut size={14} />
+              Switch
+            </button>
+          </div>
+          
           {/* Progress & Timer */}
           <div className="mb-4 sm:mb-6">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs sm:text-sm text-zinc-500">Progress</span>
               <div className="flex items-center gap-2 sm:gap-4">
-                {/* Timer */}
                 <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 sm:px-4 sm:py-2 rounded-full text-sm ${
                   timeLeft > 60 ? 'bg-green-500/20 text-green-400' :
                   timeLeft > 30 ? 'bg-yellow-500/20 text-yellow-400' :
@@ -211,8 +329,6 @@ export default function GamePage() {
                   <span className="text-sm sm:text-base">⏱️</span>
                   <span className="font-display text-lg sm:text-xl">{formatTime(timeLeft)}</span>
                 </div>
-                
-                {/* Counter */}
                 <div className="flex items-baseline gap-0.5">
                   <span className="font-display text-xl sm:text-2xl text-yellow-400">{session.currentQuestionIndex + 1}</span>
                   <span className="text-zinc-500 text-sm">/{questions.length}</span>
@@ -231,27 +347,42 @@ export default function GamePage() {
           {!isVotingOpen && !hasVoted && (
             <div className="mb-4 p-3 sm:p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-center">
               <p className="text-red-300 font-semibold text-sm sm:text-base">⏱️ Voting time ended!</p>
-              <button
-                onClick={handleViewResults}
-                className="mt-2 px-4 py-2 bg-red-500/30 rounded-lg text-red-300 text-xs sm:text-sm"
-              >
+              <button onClick={handleViewResults} className="mt-2 px-4 py-2 bg-red-500/30 rounded-lg text-red-300 text-xs sm:text-sm">
                 View Results
               </button>
             </div>
           )}
           
           {hasVoted && (
-            <div className="mb-4 p-3 sm:p-4 bg-green-500/20 border border-green-500/30 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-green-400">✓</span>
-                <span className="text-green-300 text-sm sm:text-base">Vote submitted!</span>
+            <div className="mb-4 p-3 sm:p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-center sm:text-left">
+                  <span className="text-green-400 text-lg">✓</span>
+                  <div>
+                    <span className="text-green-300 text-sm sm:text-base font-medium">Vote submitted!</span>
+                    {votedPlayer && (
+                      <span className="text-green-400/70 text-sm ml-2">
+                        You voted for {votedPlayer.emoji} {votedPlayer.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  {isVotingOpen && (
+                    <button
+                      onClick={handleChangeVote}
+                      disabled={changingVote}
+                      className="flex items-center gap-1.5 px-3 py-2 bg-orange-500/20 hover:bg-orange-500/30 rounded-lg text-orange-300 text-xs sm:text-sm transition-colors disabled:opacity-50"
+                    >
+                      <RotateCcw size={14} className={changingVote ? 'animate-spin' : ''} />
+                      {changingVote ? 'Removing...' : 'Change Vote'}
+                    </button>
+                  )}
+                  <button onClick={handleViewResults} className="px-3 py-2 bg-green-500/30 hover:bg-green-500/40 rounded-lg text-green-300 text-xs sm:text-sm transition-colors">
+                    View Results
+                  </button>
+                </div>
               </div>
-              <button
-                onClick={handleViewResults}
-                className="px-4 py-2 bg-green-500/30 rounded-lg text-green-300 text-xs sm:text-sm"
-              >
-                View Results
-              </button>
             </div>
           )}
           
@@ -271,8 +402,8 @@ export default function GamePage() {
             </p>
             <div className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 ${
               !isVotingOpen && !hasVoted ? 'opacity-50 pointer-events-none' : ''
-            }`}>
-              {players.map((player) => (
+            } ${hasVoted ? 'opacity-70' : ''}`}>
+              {players.filter(p => p.id !== currentPlayer.id).map((player) => (
                 <VoteCard
                   key={player.id}
                   player={player}
@@ -282,15 +413,15 @@ export default function GamePage() {
                 />
               ))}
             </div>
+            <p className="text-[10px] text-zinc-600 text-center mt-2">
+              You can't vote for yourself 😉
+            </p>
           </div>
           
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 sm:justify-between">
             {(hasVoted || !isVotingOpen) && (
-              <button
-                onClick={handleViewResults}
-                className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-purple-500/20 text-purple-300 text-sm sm:text-base order-2 sm:order-1"
-              >
+              <button onClick={handleViewResults} className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-full bg-purple-500/20 text-purple-300 text-sm sm:text-base order-2 sm:order-1">
                 📊 View Results
               </button>
             )}
@@ -303,14 +434,11 @@ export default function GamePage() {
               >
                 {submitting ? 'Submitting...' : '✓ Submit Vote'}
               </button>
-            ) : (
-              <button
-                onClick={handleViewResults}
-                className="btn-gold px-6 py-3 sm:px-8 sm:py-4 rounded-full text-base sm:text-lg font-semibold order-1 sm:order-2 w-full sm:w-auto"
-              >
+            ) : !hasVoted ? (
+              <button onClick={handleViewResults} className="btn-gold px-6 py-3 sm:px-8 sm:py-4 rounded-full text-base sm:text-lg font-semibold order-1 sm:order-2 w-full sm:w-auto">
                 View Results →
               </button>
-            )}
+            ) : null}
           </div>
         </div>
       </div>
