@@ -1,19 +1,52 @@
 #!/bin/bash
 
 # ================================================================
-# 🌱 SEED API - Seed from Admin Portal
+# 🔥 ROAST PROFILES - Hidden Dirty Quotes
 # Run this inside your brutal-awards folder
 # ================================================================
 
-echo "🌱 Creating Seed API..."
-echo "========================"
+echo "🔥 Creating Roast Profiles..."
+echo "=============================="
 
 # ================================================================
-# 1. CREATE: Seed API
+# 1. UPDATE: Player Model - Add roast fields
 # ================================================================
-echo "1️⃣ Creating Seed API..."
+echo "1️⃣ Updating Player Model..."
 
-mkdir -p app/api/admin/seed
+cat > lib/models/Player.ts << 'EOF'
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IPlayer extends Document {
+  id: number;
+  name: string;
+  emoji: string;
+  isActive: boolean;
+  roast?: string;
+  dirtySecret?: string;
+  prediction?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PlayerSchema = new Schema<IPlayer>({
+  id: { type: Number, required: true, unique: true },
+  name: { type: String, required: true },
+  emoji: { type: String, default: '😀' },
+  isActive: { type: Boolean, default: true },
+  roast: { type: String },
+  dirtySecret: { type: String },
+  prediction: { type: String },
+}, { timestamps: true });
+
+export const PlayerModel = mongoose.models.Player || mongoose.model<IPlayer>('Player', PlayerSchema);
+EOF
+
+echo "   ✅ Player model updated"
+
+# ================================================================
+# 2. UPDATE: Seed API - Add roasts
+# ================================================================
+echo "2️⃣ Updating Seed API with roasts..."
 
 cat > app/api/admin/seed/route.ts << 'EOF'
 import { NextResponse } from 'next/server';
@@ -27,21 +60,109 @@ import {
 } from '@/lib/models';
 
 // ================================================================
-// SEED DATA
+// SEED DATA WITH ROASTS
 // ================================================================
 
 const players = [
-  { id: 1, name: "Mohsin", emoji: "😎", isActive: true },
-  { id: 2, name: "Ganesh", emoji: "🔥", isActive: true },
-  { id: 3, name: "Amit", emoji: "💪", isActive: true },
-  { id: 4, name: "JP", emoji: "🎯", isActive: true },
-  { id: 5, name: "Akash", emoji: "⚡", isActive: true },
-  { id: 6, name: "Toran", emoji: "🌟", isActive: true },
-  { id: 7, name: "Anup", emoji: "🎭", isActive: true },
-  { id: 8, name: "Sambit", emoji: "🚀", isActive: true },
-  { id: 9, name: "Yash", emoji: "👑", isActive: true },
-  { id: 10, name: "Bhalu", emoji: "🐻", isActive: true },
-  { id: 11, name: "Vishal", emoji: "💎", isActive: true },
+  { 
+    id: 1, 
+    name: "Mohsin", 
+    emoji: "😎", 
+    isActive: true,
+    roast: "Claims to be a blockchain developer, but the only chain he's mastered is the one attached to his wallet... which is always empty. 💸",
+    dirtySecret: "Once googled 'how to mass produce money' for 3 hours straight. FBI is still watching. 🕵️",
+    prediction: "Will become a crypto billionaire... in Monopoly money. 🎲"
+  },
+  { 
+    id: 2, 
+    name: "Ganesh", 
+    emoji: "🔥", 
+    isActive: true,
+    roast: "The only thing hotter than his name is his browser history. Incognito mode? More like 'Ganesh Mode'. 🔥",
+    dirtySecret: "Has a secret folder named 'Tax Documents 2019' that has never seen a tax document. 📁",
+    prediction: "Will marry his laptop. The wedding will be in private browsing. 💒"
+  },
+  { 
+    id: 3, 
+    name: "Amit", 
+    emoji: "💪", 
+    isActive: true,
+    roast: "Gym bro who thinks protein shake is a personality trait. His muscles are big but his texts are always 'K'. 💪",
+    dirtySecret: "Flexes in every reflective surface including spoons. Has been caught kissing his biceps. 😘",
+    prediction: "Will open a gym where the only exercise is taking selfies. 🤳"
+  },
+  { 
+    id: 4, 
+    name: "JP", 
+    emoji: "🎯", 
+    isActive: true,
+    roast: "JP stands for 'Just Pretending' to know what's going on. Nods confidently at everything. 🎯",
+    dirtySecret: "Once said 'I love that song' to a ringtone. Has been faking music taste for 10 years. 🎵",
+    prediction: "Will become a professional nodder. Companies will pay him to agree in meetings. 👔"
+  },
+  { 
+    id: 5, 
+    name: "Akash", 
+    emoji: "⚡", 
+    isActive: true,
+    roast: "Named after the sky but his standards are underground. Would swipe right on a potato if it had a filter. ⚡",
+    dirtySecret: "Has a Tinder gold subscription and still gets no matches. Blames the algorithm. 📱",
+    prediction: "Will finally get a match... with his alternate account. Self-love is important! 💕"
+  },
+  { 
+    id: 6, 
+    name: "Toran", 
+    emoji: "🌟", 
+    isActive: true,
+    roast: "The 'intellectual' of the group who quotes philosophers but can't cook Maggi without burning it. 🌟",
+    dirtySecret: "Reads book summaries on YouTube and says 'I read this amazing book'. Hasn't finished a book since 2015. 📚",
+    prediction: "Will start a podcast that only his mom listens to. She'll leave 5-star reviews. ⭐"
+  },
+  { 
+    id: 7, 
+    name: "Anup", 
+    emoji: "🎭", 
+    isActive: true,
+    roast: "The drama king who treats every minor inconvenience like a Netflix original series. 🎭",
+    dirtySecret: "Cried during a phone ad. Not even the sad part, just when they showed the price. 😢",
+    prediction: "Will win an Oscar for 'Best Performance of Being Fine When Not Fine'. 🏆"
+  },
+  { 
+    id: 8, 
+    name: "Sambit", 
+    emoji: "🚀", 
+    isActive: true,
+    roast: "Always talking about his 'startup ideas' but the only thing he's started is arguments. 🚀",
+    dirtySecret: "Has 47 domain names registered and 0 working websites. Calls himself a 'serial entrepreneur'. 💼",
+    prediction: "Will pivot his startup 15 times and end up selling samosas. The samosas will be successful. 🥟"
+  },
+  { 
+    id: 9, 
+    name: "Yash", 
+    emoji: "👑", 
+    isActive: true,
+    roast: "The groom who's about to lose his freedom faster than he loses his hair. Marriage is just multiplayer suffering. 👑",
+    dirtySecret: "Has already practiced saying 'Yes dear' 10,000 times. His wife doesn't know he's this prepared. 💍",
+    prediction: "Will become the world champion of 'I was just about to do that!' 🏅"
+  },
+  { 
+    id: 10, 
+    name: "Bhalu", 
+    emoji: "🐻", 
+    isActive: true,
+    roast: "Named Bhalu because he hibernates through every group plan. Legendary for the phrase 'Next time pakka'. 🐻",
+    dirtySecret: "Has cancelled plans so many times that his friends now make fake plans just to get a real rejection. 🗓️",
+    prediction: "Will write a bestseller: '101 Excuses to Not Show Up'. Chapter 1: 'Mummy ne mana kiya'. 📖"
+  },
+  { 
+    id: 11, 
+    name: "Vishal", 
+    emoji: "💎", 
+    isActive: true,
+    roast: "The 'premium' friend who judges everyone's taste while wearing the same 3 shirts on rotation. 💎",
+    dirtySecret: "Gives relationship advice but his last relationship was with a body pillow. It ended badly. 🛏️",
+    prediction: "Will become a fashion influencer with 12 followers. 11 of them are his relatives. 👗"
+  },
 ];
 
 const questions = [
@@ -288,13 +409,13 @@ const gameConfig = {
   welcomeMessage: "Welcome to the most brutal game of the bachelor party! Vote wisely, because every vote counts... and twists await! 🎉",
   isGameActive: true,
   currentQuestion: 0,
+  roastsRevealed: false,
 };
 
 // ================================================================
 // API HANDLERS
 // ================================================================
 
-// GET - Get seed data preview
 export async function GET() {
   return NextResponse.json({
     preview: {
@@ -310,14 +431,12 @@ export async function GET() {
   });
 }
 
-// POST - Seed the database
 export async function POST(request: Request) {
   try {
     await dbConnect();
     const body = await request.json();
     const { password, clearFirst = true } = body;
     
-    // Password protection
     const adminPassword = process.env.ADMIN_PASSWORD || 'yash2025';
     if (password !== adminPassword) {
       return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
@@ -328,7 +447,6 @@ export async function POST(request: Request) {
       seeded: {},
     };
     
-    // Clear existing data if requested
     if (clearFirst) {
       const [p, q, v, c, s] = await Promise.all([
         PlayerModel.deleteMany({}),
@@ -347,19 +465,15 @@ export async function POST(request: Request) {
       };
     }
     
-    // Seed players
     await PlayerModel.insertMany(players);
     result.seeded.players = players.length;
     
-    // Seed questions
     await QuestionModel.insertMany(questions);
     result.seeded.questions = questions.length;
     
-    // Seed config
     await GameConfigModel.create(gameConfig);
     result.seeded.config = 1;
     
-    // Seed session
     await GameSessionModel.create({
       sessionId: 'main',
       currentQuestionId: 1,
@@ -385,372 +499,161 @@ export async function POST(request: Request) {
 }
 EOF
 
-echo "   ✅ Seed API created"
+echo "   ✅ Seed API updated with roasts"
 
 # ================================================================
-# 2. UPDATE: Admin Dashboard - Add Seed Button
+# 3. CREATE: Roasts API
 # ================================================================
-echo "2️⃣ Updating Admin Dashboard..."
+echo "3️⃣ Creating Roasts API..."
 
-cat > app/admin/page.tsx << 'EOF'
+mkdir -p app/api/roasts
+
+cat > app/api/roasts/route.ts << 'EOF'
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import { PlayerModel, GameConfigModel } from '@/lib/models';
+
+// GET - Get roast status (without revealing content)
+export async function GET(request: Request) {
+  try {
+    await dbConnect();
+    
+    const { searchParams } = new URL(request.url);
+    const reveal = searchParams.get('reveal') === 'true';
+    const playerId = searchParams.get('playerId');
+    
+    const config = await GameConfigModel.findOne();
+    const isGlobalReveal = config?.roastsRevealed || false;
+    
+    const players = await PlayerModel.find({ isActive: true }).sort({ id: 1 });
+    
+    const roastData = players.map(p => ({
+      id: p.id,
+      name: p.name,
+      emoji: p.emoji,
+      // Only reveal if global reveal OR specific player requested with reveal=true
+      roast: (isGlobalReveal || (reveal && playerId === String(p.id))) ? p.roast : null,
+      dirtySecret: (isGlobalReveal || (reveal && playerId === String(p.id))) ? p.dirtySecret : null,
+      prediction: (isGlobalReveal || (reveal && playerId === String(p.id))) ? p.prediction : null,
+      isRevealed: isGlobalReveal,
+    }));
+    
+    return NextResponse.json({
+      players: roastData,
+      globalReveal: isGlobalReveal,
+    });
+  } catch (error) {
+    console.error('Roasts fetch error:', error);
+    return NextResponse.json({ error: 'Failed to fetch roasts' }, { status: 500 });
+  }
+}
+
+// POST - Reveal roasts (admin only)
+export async function POST(request: Request) {
+  try {
+    await dbConnect();
+    const body = await request.json();
+    const { password, action, playerId } = body;
+    
+    const adminPassword = process.env.ADMIN_PASSWORD || 'yash2025';
+    if (password !== adminPassword) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+    }
+    
+    if (action === 'reveal_all') {
+      await GameConfigModel.updateOne({}, { $set: { roastsRevealed: true } });
+      return NextResponse.json({ success: true, message: '🔥 All roasts revealed!' });
+    }
+    
+    if (action === 'hide_all') {
+      await GameConfigModel.updateOne({}, { $set: { roastsRevealed: false } });
+      return NextResponse.json({ success: true, message: '🙈 All roasts hidden!' });
+    }
+    
+    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  } catch (error) {
+    console.error('Roasts action error:', error);
+    return NextResponse.json({ error: 'Failed to update roasts' }, { status: 500 });
+  }
+}
+EOF
+
+echo "   ✅ Roasts API created"
+
+# ================================================================
+# 4. CREATE: Roasts Page
+# ================================================================
+echo "4️⃣ Creating Roasts page..."
+
+mkdir -p app/roasts
+
+cat > app/roasts/page.tsx << 'EOF'
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
+import BottomNav from '@/components/BottomNav';
 import Loading from '@/components/Loading';
-import { Player, Question, GameConfig, GameSession } from '@/types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Lock, Unlock, Eye, EyeOff, Flame, Skull, Star, ChevronDown, ChevronUp } from 'lucide-react';
 
-interface Stats {
-  game: { title: string; isActive: boolean; currentQuestion: number };
-  counts: {
-    totalVotes: number;
-    totalQuestions: number;
-    activeQuestions: number;
-    totalPlayers: number;
-    activePlayers: number;
-    uniqueVoters: number;
-    uniqueSessions: number;
-  };
-  votesPerQuestion: Record<number, number>;
-  votesReceived: Record<number, number>;
+interface RoastPlayer {
+  id: number;
+  name: string;
+  emoji: string;
+  roast: string | null;
+  dirtySecret: string | null;
+  prediction: string | null;
+  isRevealed: boolean;
 }
 
-interface CollectionStats {
-  collections: Record<string, { count: number; name: string }>;
-  total: number;
-}
-
-export default function AdminPage() {
+export default function RoastsPage() {
   const router = useRouter();
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [config, setConfig] = useState<GameConfig | null>(null);
-  const [session, setSession] = useState<GameSession & { remainingSeconds: number } | null>(null);
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [collections, setCollections] = useState<CollectionStats | null>(null);
+  const [players, setPlayers] = useState<RoastPlayer[]>([]);
+  const [globalReveal, setGlobalReveal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'session' | 'overview' | 'config' | 'players' | 'questions' | 'votes' | 'database'>('session');
-  const [adminPassword, setAdminPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  const [newPlayer, setNewPlayer] = useState({ name: '', emoji: '😀' });
-  const [editingConfig, setEditingConfig] = useState<Partial<GameConfig>>({});
-  const [votingDuration, setVotingDuration] = useState(180);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [message, setMessage] = useState({ type: '', text: '' });
+  const [expandedPlayer, setExpandedPlayer] = useState<number | null>(null);
+  const [revealingPlayer, setRevealingPlayer] = useState<number | null>(null);
+  const [localReveals, setLocalReveals] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    const savedAuth = localStorage.getItem('adminAuth');
-    if (savedAuth === 'true') {
-      setIsAuthenticated(true);
-      fetchAll();
-    } else {
-      setLoading(false);
-    }
+    fetchRoasts();
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      const interval = setInterval(() => {
-        fetchSession();
-        fetchCollections();
-      }, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isAuthenticated]);
-
-  const handleLogin = () => {
-    if (adminPassword === 'yash2025') {
-      setIsAuthenticated(true);
-      localStorage.setItem('adminAuth', 'true');
-      fetchAll();
-    } else {
-      showMessage('error', 'Invalid password');
-    }
-  };
-
-  const handleLogout = () => {
-    setIsAuthenticated(false);
-    localStorage.removeItem('adminAuth');
-  };
-
-  async function fetchSession() {
+  async function fetchRoasts() {
     try {
-      const res = await fetch('/api/session');
+      const res = await fetch('/api/roasts');
       const data = await res.json();
-      setSession(data);
-      setVotingDuration(data.votingDurationSeconds || 180);
+      setPlayers(data.players || []);
+      setGlobalReveal(data.globalReveal || false);
     } catch (error) {
-      console.error('Failed to fetch session:', error);
-    }
-  }
-
-  async function fetchCollections() {
-    try {
-      const res = await fetch('/api/admin/collections');
-      const data = await res.json();
-      setCollections(data);
-    } catch (error) {
-      console.error('Failed to fetch collections:', error);
-    }
-  }
-
-  async function fetchAll() {
-    try {
-      const [playersRes, questionsRes, configRes, statsRes] = await Promise.all([
-        fetch('/api/players?all=true'),
-        fetch('/api/questions?all=true'),
-        fetch('/api/config'),
-        fetch('/api/admin/stats'),
-      ]);
-      
-      setPlayers(await playersRes.json());
-      setQuestions(await questionsRes.json());
-      const configData = await configRes.json();
-      setConfig(configData);
-      setEditingConfig(configData);
-      setStats(await statsRes.json());
-      await fetchSession();
-      await fetchCollections();
-    } catch (error) {
-      console.error('Failed to fetch:', error);
-      showMessage('error', 'Failed to fetch data');
+      console.error('Failed to fetch roasts:', error);
     } finally {
       setLoading(false);
     }
   }
 
-  function showMessage(type: string, text: string) {
-    setMessage({ type, text });
-    setTimeout(() => setMessage({ type: '', text: '' }), 4000);
-  }
-
-  // Session Actions
-  async function handleSessionAction(action: string, data?: any) {
-    setActionLoading(true);
-    try {
-      await fetch('/api/session', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...data }),
-      });
-      showMessage('success', `Action "${action}" completed`);
-      fetchSession();
-    } catch (error) {
-      showMessage('error', 'Action failed');
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  async function handleNewGame() {
-    if (!confirm('Start a new game? This will reset progress but keep votes.')) return;
-    setActionLoading(true);
-    try {
-      await fetch('/api/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ votingDurationSeconds: votingDuration }),
-      });
-      showMessage('success', 'New game started!');
-      fetchSession();
-    } catch (error) {
-      showMessage('error', 'Failed to start new game');
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  // Config Actions
-  async function handleUpdateConfig() {
-    setActionLoading(true);
-    try {
-      await fetch('/api/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingConfig),
-      });
-      showMessage('success', 'Config updated!');
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed to update config');
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  // Player Actions
-  async function handleAddPlayer() {
-    if (!newPlayer.name) return showMessage('error', 'Player name required');
-    setActionLoading(true);
-    try {
-      await fetch('/api/players', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newPlayer),
-      });
-      setNewPlayer({ name: '', emoji: '😀' });
-      showMessage('success', 'Player added!');
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed to add player');
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  async function handleTogglePlayer(id: number, isActive: boolean) {
-    try {
-      await fetch('/api/players', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, isActive: !isActive }),
-      });
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed');
-    }
-  }
-
-  async function handleDeletePlayer(id: number) {
-    if (!confirm('PERMANENTLY delete?')) return;
-    try {
-      await fetch(`/api/players?id=${id}&hard=true`, { method: 'DELETE' });
-      showMessage('success', 'Deleted');
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed');
-    }
-  }
-
-  // Question Actions
-  async function handleToggleQuestion(id: number, isActive: boolean) {
-    try {
-      await fetch('/api/questions', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, isActive: !isActive }),
-      });
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed');
-    }
-  }
-
-  async function handleDeleteQuestion(id: number) {
-    if (!confirm('PERMANENTLY delete?')) return;
-    try {
-      await fetch(`/api/questions?id=${id}&hard=true`, { method: 'DELETE' });
-      showMessage('success', 'Deleted');
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed');
-    }
-  }
-
-  // Vote Actions
-  async function handleDeleteQuestionVotes(questionId: number) {
-    if (!confirm(`Delete votes for Q${questionId}?`)) return;
-    setActionLoading(true);
-    try {
-      await fetch(`/api/votes?questionId=${questionId}`, { method: 'DELETE' });
-      showMessage('success', 'Votes deleted');
-      fetchAll();
-    } catch (error) {
-      showMessage('error', 'Failed');
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  // Collection Actions
-  async function handleDeleteCollection(collection: string) {
-    const confirmMsg = collection === 'all' 
-      ? '⚠️ DELETE ALL COLLECTIONS? This will wipe the entire database!'
-      : `Delete all data from "${collection}"?`;
-    if (!confirm(confirmMsg)) return;
-    if (collection === 'all' && !confirm('Are you REALLY sure? This cannot be undone!')) return;
+  async function handleRevealPlayer(playerId: number) {
+    setRevealingPlayer(playerId);
     
-    setActionLoading(true);
+    // Fetch with reveal for this specific player
     try {
-      const res = await fetch(`/api/admin/collections?collection=${collection}&password=yash2025`, { 
-        method: 'DELETE' 
-      });
+      const res = await fetch(`/api/roasts?reveal=true&playerId=${playerId}`);
       const data = await res.json();
-      if (data.success) {
-        showMessage('success', data.message);
-        fetchAll();
-      } else {
-        showMessage('error', data.error);
-      }
+      setPlayers(data.players || []);
+      setLocalReveals(prev => new Set([...prev, playerId]));
     } catch (error) {
-      showMessage('error', 'Failed to delete collection');
+      console.error('Failed to reveal:', error);
     } finally {
-      setActionLoading(false);
+      setRevealingPlayer(null);
+      setExpandedPlayer(playerId);
     }
   }
 
-  // 🌱 SEED DATABASE
-  async function handleSeedDatabase() {
-    if (!confirm('🌱 Seed database with default data?\n\nThis will:\n• Clear all existing data\n• Add 11 players\n• Add 10 questions\n• Reset game session')) return;
-    
-    setActionLoading(true);
-    try {
-      const res = await fetch('/api/admin/seed', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: 'yash2025', clearFirst: true }),
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        showMessage('success', '🌱 Database seeded! 11 players, 10 questions ready.');
-        fetchAll();
-      } else {
-        showMessage('error', data.error || 'Failed to seed');
-      }
-    } catch (error) {
-      showMessage('error', 'Failed to seed database');
-    } finally {
-      setActionLoading(false);
-    }
-  }
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const toggleExpanded = (playerId: number) => {
+    setExpandedPlayer(expandedPlayer === playerId ? null : playerId);
   };
-
-  // Login Screen
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-[#0A0A0F]">
-        <div className="card p-8 max-w-md w-full text-center">
-          <div className="text-5xl mb-4">🔐</div>
-          <h1 className="font-display text-2xl gradient-text mb-6">Admin Access</h1>
-          <input
-            type="password"
-            placeholder="Enter admin password"
-            value={adminPassword}
-            onChange={(e) => setAdminPassword(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
-            className="w-full px-4 py-3 bg-dark-elevated rounded-xl border border-white/10 focus:border-yellow-500 outline-none mb-4"
-          />
-          <button onClick={handleLogin} className="btn-gold w-full px-6 py-3 rounded-xl">
-            Login
-          </button>
-          {message.text && (
-            <p className={`mt-4 text-sm ${message.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>
-              {message.text}
-            </p>
-          )}
-          <p className="text-zinc-500 text-sm mt-4">Default: yash2025</p>
-        </div>
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -764,276 +667,449 @@ export default function AdminPage() {
     <>
       <Header />
       
-      <div className="min-h-screen pt-16 sm:pt-20 pb-8 px-3 sm:px-4 bg-[#0A0A0F]">
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen pt-16 sm:pt-20 pb-20 md:pb-8 px-3 sm:px-4">
+        <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="font-display text-xl sm:text-2xl lg:text-3xl gradient-text">🛡️ Admin</h1>
-            <button onClick={handleLogout} className="text-zinc-400 hover:text-white text-sm px-3 py-1.5 rounded-lg hover:bg-white/5">
-              Logout
-            </button>
+          <div className="text-center mb-6 sm:mb-8">
+            <div className="text-4xl sm:text-5xl mb-3">🔥</div>
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl gradient-text mb-2">Roast Profiles</h1>
+            <p className="text-zinc-400 text-sm sm:text-base">AI-generated roasts for each legend</p>
+            
+            {!globalReveal && (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/30 rounded-full">
+                <Lock size={16} className="text-red-400" />
+                <span className="text-red-300 text-sm">Tap each profile to reveal their roast!</span>
+              </div>
+            )}
+            
+            {globalReveal && (
+              <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-green-500/20 border border-green-500/30 rounded-full">
+                <Unlock size={16} className="text-green-400" />
+                <span className="text-green-300 text-sm">All roasts revealed!</span>
+              </div>
+            )}
           </div>
           
-          {/* Message Toast */}
-          {message.text && (
-            <div className={`fixed top-20 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:w-auto px-6 py-3 rounded-xl z-50 text-center text-sm font-medium ${
-              message.type === 'error' ? 'bg-red-500' : 'bg-green-500'
-            }`}>
-              {message.text}
-            </div>
-          )}
-          
-          {/* Tabs */}
-          <div className="flex gap-1.5 sm:gap-2 mb-6 overflow-x-auto pb-2 -mx-3 px-3 scrollbar-hide">
-            {(['session', 'overview', 'config', 'players', 'questions', 'votes', 'database'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all ${
-                  activeTab === tab
-                    ? 'bg-yellow-500 text-black'
-                    : 'bg-dark-card hover:bg-dark-elevated'
-                }`}
-              >
-                {tab === 'session' ? '🎮 Game' : 
-                 tab === 'database' ? '🗄️ DB' : 
-                 tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
-          
-          {/* ============ SESSION TAB ============ */}
-          {activeTab === 'session' && session && (
-            <div className="space-y-4 sm:space-y-6">
-              <div className="card p-4 sm:p-6">
-                <h3 className="font-semibold mb-4 text-base sm:text-lg">🎮 Game Status</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                  <div className="text-center p-3 sm:p-4 bg-dark-elevated rounded-xl">
-                    <p className="text-2xl sm:text-3xl font-display gradient-text">{session.currentQuestionIndex + 1}</p>
-                    <p className="text-[10px] sm:text-xs text-zinc-500">Current Q</p>
-                  </div>
-                  <div className="text-center p-3 sm:p-4 bg-dark-elevated rounded-xl">
-                    <p className="text-2xl sm:text-3xl font-display text-purple-400">{formatTime(session.remainingSeconds || 0)}</p>
-                    <p className="text-[10px] sm:text-xs text-zinc-500">Time Left</p>
-                  </div>
-                  <div className="text-center p-3 sm:p-4 bg-dark-elevated rounded-xl">
-                    <p className={`text-lg sm:text-xl font-semibold ${
-                      session.status === 'voting' ? 'text-green-400' : 
-                      session.status === 'results' ? 'text-purple-400' : 'text-zinc-400'
-                    }`}>{session.status?.toUpperCase()}</p>
-                    <p className="text-[10px] sm:text-xs text-zinc-500">Status</p>
-                  </div>
-                  <div className="text-center p-3 sm:p-4 bg-dark-elevated rounded-xl">
-                    <p className="text-2xl sm:text-3xl font-display text-cyan-400">{session.votingDurationSeconds}s</p>
-                    <p className="text-[10px] sm:text-xs text-zinc-500">Duration</p>
-                  </div>
-                </div>
-                
-                {questions[session.currentQuestionIndex] && (
-                  <div className="p-3 sm:p-4 bg-dark-elevated rounded-xl">
-                    <p className="text-[10px] sm:text-xs text-zinc-500 mb-1">Current Question</p>
-                    <p className="font-medium text-sm sm:text-base">{questions[session.currentQuestionIndex].question}</p>
-                  </div>
-                )}
-              </div>
+          {/* Player Cards */}
+          <div className="space-y-3 sm:space-y-4">
+            {players.map((player) => {
+              const isRevealed = globalReveal || localReveals.has(player.id);
+              const isExpanded = expandedPlayer === player.id;
+              const isRevealing = revealingPlayer === player.id;
               
-              <div className="card p-4 sm:p-6">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">🕹️ Controls</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-                  <button onClick={() => handleSessionAction('previous_question')} disabled={actionLoading} className="px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-zinc-500/20 text-zinc-300 hover:bg-zinc-500/30 disabled:opacity-50 text-sm">⏮️ Prev</button>
-                  <button onClick={() => handleSessionAction('restart_timer')} disabled={actionLoading} className="px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 text-sm">🔄 Restart</button>
-                  <button onClick={() => handleSessionAction('reveal_twist')} disabled={actionLoading} className="px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 text-sm">⚡ Reveal</button>
-                  <button onClick={() => handleSessionAction('next_question')} disabled={actionLoading} className="px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl bg-green-500/20 text-green-400 hover:bg-green-500/30 text-sm">⏭️ Next</button>
-                </div>
-              </div>
-              
-              <div className="card p-4 sm:p-6">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">🎯 Jump to Question</h3>
-                <div className="flex flex-wrap gap-2">
-                  {questions.filter(q => q.isActive).map((q, i) => (
-                    <button
-                      key={q.id}
-                      onClick={() => handleSessionAction('go_to_question', { questionIndex: i })}
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl font-display text-base sm:text-lg ${
-                        i === session.currentQuestionIndex ? 'bg-yellow-500 text-black' : 'bg-dark-elevated hover:bg-purple-500/30'
-                      }`}
-                    >
-                      {i + 1}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="card p-4 sm:p-6">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">⏱️ Timer</h3>
-                <div className="flex flex-wrap gap-2 sm:gap-3 items-center">
-                  <input
-                    type="number"
-                    value={votingDuration}
-                    onChange={(e) => setVotingDuration(parseInt(e.target.value) || 60)}
-                    className="w-20 sm:w-24 px-3 py-2.5 bg-dark-elevated rounded-xl border border-white/10 outline-none text-sm"
-                  />
-                  <span className="text-zinc-400 text-sm">sec</span>
-                  <button onClick={() => handleSessionAction('set_duration', { seconds: votingDuration })} className="px-3 py-2.5 rounded-xl bg-cyan-500/20 text-cyan-400 text-sm">Set</button>
-                  <button onClick={() => handleSessionAction('extend_time', { seconds: 60 })} className="px-3 py-2.5 rounded-xl bg-green-500/20 text-green-400 text-sm">+1m</button>
-                </div>
-              </div>
-              
-              <div className="card p-4 sm:p-6 border-yellow-500/30">
-                <h3 className="font-semibold mb-3 text-yellow-400 text-sm sm:text-base">🆕 New Game</h3>
-                <button onClick={handleNewGame} disabled={actionLoading} className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-yellow-500/20 text-yellow-400 text-sm">Start New Game</button>
-              </div>
-            </div>
-          )}
-          
-          {/* ============ DATABASE TAB ============ */}
-          {activeTab === 'database' && collections && (
-            <div className="space-y-4 sm:space-y-6">
-              {/* Collection Stats */}
-              <div className="card p-4 sm:p-6">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">📊 Collections</h3>
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 sm:gap-4">
-                  {Object.entries(collections.collections).map(([key, val]) => (
-                    <div key={key} className="text-center p-2 sm:p-4 bg-dark-elevated rounded-xl">
-                      <p className="text-xl sm:text-3xl font-display gradient-text">{val.count}</p>
-                      <p className="text-[9px] sm:text-xs text-zinc-500 uppercase truncate">{val.name}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              {/* 🌱 SEED DATABASE - NEW! */}
-              <div className="card p-4 sm:p-6 border-green-500/30 bg-gradient-to-br from-green-500/5 to-transparent">
-                <h3 className="font-semibold mb-2 text-green-400 text-base sm:text-lg">🌱 Seed Database</h3>
-                <p className="text-zinc-400 text-xs sm:text-sm mb-4">Populate database with default data (11 players, 10 questions)</p>
-                <button 
-                  onClick={handleSeedDatabase} 
-                  disabled={actionLoading}
-                  className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-green-500/20 text-green-400 hover:bg-green-500/30 font-semibold text-sm sm:text-base disabled:opacity-50"
+              return (
+                <motion.div
+                  key={player.id}
+                  layout
+                  className={`card overflow-hidden transition-all ${
+                    isRevealed 
+                      ? 'border-yellow-500/30' 
+                      : 'border-white/10 hover:border-red-500/30'
+                  }`}
                 >
-                  {actionLoading ? '⏳ Seeding...' : '🌱 Seed Default Data'}
-                </button>
-              </div>
-              
-              {/* Delete Collections */}
-              <div className="card p-4 sm:p-6">
-                <h3 className="font-semibold mb-3 sm:mb-4 text-base sm:text-lg">🗑️ Delete Collections</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-                  <button onClick={() => handleDeleteCollection('votes')} disabled={actionLoading} className="px-3 py-2.5 rounded-xl bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 text-xs sm:text-sm">🗑️ Votes</button>
-                  <button onClick={() => handleDeleteCollection('gamesessions')} disabled={actionLoading} className="px-3 py-2.5 rounded-xl bg-orange-500/20 text-orange-400 hover:bg-orange-500/30 text-xs sm:text-sm">🗑️ Sessions</button>
-                  <button onClick={() => handleDeleteCollection('players')} disabled={actionLoading} className="px-3 py-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs sm:text-sm">🗑️ Players</button>
-                  <button onClick={() => handleDeleteCollection('questions')} disabled={actionLoading} className="px-3 py-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs sm:text-sm">🗑️ Questions</button>
-                  <button onClick={() => handleDeleteCollection('gameconfigs')} disabled={actionLoading} className="px-3 py-2.5 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30 text-xs sm:text-sm">🗑️ Config</button>
-                </div>
-              </div>
-              
-              {/* Nuclear Option */}
-              <div className="card p-4 sm:p-6 border-red-500/50">
-                <h3 className="font-semibold mb-2 text-red-400 text-base sm:text-lg">☢️ Danger Zone</h3>
-                <p className="text-zinc-500 text-xs sm:text-sm mb-4">Delete ALL data. Use "Seed Database" after to restore.</p>
-                <button 
-                  onClick={() => handleDeleteCollection('all')} 
-                  disabled={actionLoading}
-                  className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-red-500/30 text-red-400 hover:bg-red-500/40 font-semibold text-sm"
-                >
-                  💣 Delete All Data
-                </button>
-              </div>
-            </div>
-          )}
-          
-          {/* ============ OTHER TABS ============ */}
-          {activeTab === 'overview' && stats && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-              <div className="card p-3 sm:p-4 text-center"><p className="text-2xl sm:text-3xl font-display gradient-text">{stats.counts.totalVotes}</p><p className="text-[10px] sm:text-xs text-zinc-500">Votes</p></div>
-              <div className="card p-3 sm:p-4 text-center"><p className="text-2xl sm:text-3xl font-display gradient-text">{stats.counts.uniqueVoters}</p><p className="text-[10px] sm:text-xs text-zinc-500">Voters</p></div>
-              <div className="card p-3 sm:p-4 text-center"><p className="text-2xl sm:text-3xl font-display gradient-text">{stats.counts.activeQuestions}</p><p className="text-[10px] sm:text-xs text-zinc-500">Questions</p></div>
-              <div className="card p-3 sm:p-4 text-center"><p className="text-2xl sm:text-3xl font-display gradient-text">{stats.counts.activePlayers}</p><p className="text-[10px] sm:text-xs text-zinc-500">Players</p></div>
-            </div>
-          )}
-          
-          {activeTab === 'config' && (
-            <div className="card p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <div><label className="block text-xs sm:text-sm text-zinc-400 mb-1">Title</label><input type="text" value={editingConfig.title || ''} onChange={(e) => setEditingConfig({ ...editingConfig, title: e.target.value })} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-dark-elevated rounded-xl border border-white/10 outline-none text-sm" /></div>
-              <div><label className="block text-xs sm:text-sm text-zinc-400 mb-1">Subtitle</label><input type="text" value={editingConfig.subtitle || ''} onChange={(e) => setEditingConfig({ ...editingConfig, subtitle: e.target.value })} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-dark-elevated rounded-xl border border-white/10 outline-none text-sm" /></div>
-              <div><label className="block text-xs sm:text-sm text-zinc-400 mb-1">Date</label><input type="text" value={editingConfig.date || ''} onChange={(e) => setEditingConfig({ ...editingConfig, date: e.target.value })} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-dark-elevated rounded-xl border border-white/10 outline-none text-sm" /></div>
-              <div><label className="block text-xs sm:text-sm text-zinc-400 mb-1">Welcome Message</label><textarea value={editingConfig.welcomeMessage || ''} onChange={(e) => setEditingConfig({ ...editingConfig, welcomeMessage: e.target.value })} rows={3} className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-dark-elevated rounded-xl border border-white/10 outline-none resize-none text-sm" /></div>
-              <button onClick={handleUpdateConfig} disabled={actionLoading} className="btn-gold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-sm">Save</button>
-            </div>
-          )}
-          
-          {activeTab === 'players' && (
-            <div className="space-y-3 sm:space-y-4">
-              <div className="card p-3 sm:p-4 flex gap-2 sm:gap-3">
-                <input type="text" placeholder="Name" value={newPlayer.name} onChange={(e) => setNewPlayer({ ...newPlayer, name: e.target.value })} className="flex-1 px-3 sm:px-4 py-2.5 bg-dark-elevated rounded-xl border border-white/10 outline-none text-sm" />
-                <input type="text" placeholder="😀" value={newPlayer.emoji} onChange={(e) => setNewPlayer({ ...newPlayer, emoji: e.target.value })} className="w-12 sm:w-16 px-2 py-2.5 bg-dark-elevated rounded-xl border border-white/10 outline-none text-center text-lg" />
-                <button onClick={handleAddPlayer} className="btn-gold px-3 sm:px-6 py-2.5 rounded-xl text-sm">Add</button>
-              </div>
-              {players.map((player) => (
-                <div key={player.id} className={`card p-3 sm:p-4 flex items-center justify-between ${!player.isActive ? 'opacity-50' : ''}`}>
-                  <div className="flex items-center gap-2 sm:gap-3"><span className="text-xl sm:text-2xl">{player.emoji}</span><span className="text-sm sm:text-base">{player.name}</span></div>
-                  <div className="flex gap-1.5 sm:gap-2">
-                    <button onClick={() => handleTogglePlayer(player.id, player.isActive)} className={`px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs ${player.isActive ? 'bg-orange-500/20 text-orange-400' : 'bg-green-500/20 text-green-400'}`}>{player.isActive ? 'Hide' : 'Show'}</button>
-                    <button onClick={() => handleDeletePlayer(player.id)} className="px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs bg-red-500/20 text-red-400">Del</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {activeTab === 'questions' && (
-            <div className="space-y-2 sm:space-y-3">
-              {questions.map((q) => (
-                <div key={q.id} className={`card p-3 sm:p-4 ${!q.isActive ? 'opacity-50' : ''}`}>
-                  <div className="flex justify-between gap-2 sm:gap-4">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 sm:gap-2 mb-1">
-                        <span className="font-display text-zinc-500 text-xs sm:text-sm">Q{q.order}</span>
-                        <span className={`text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded ${q.type === 'TWIST' ? 'bg-red-500/20 text-red-400' : q.type === 'DIRECT' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}`}>{q.type}</span>
-                      </div>
-                      <p className="font-medium text-xs sm:text-sm truncate">{q.question}</p>
+                  {/* Player Header */}
+                  <button
+                    onClick={() => isRevealed ? toggleExpanded(player.id) : handleRevealPlayer(player.id)}
+                    disabled={isRevealing}
+                    className="w-full p-4 sm:p-5 flex items-center gap-3 sm:gap-4 text-left"
+                  >
+                    {/* Avatar */}
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center text-2xl sm:text-3xl ${
+                      isRevealed 
+                        ? 'bg-gradient-to-br from-yellow-500/20 to-red-500/20' 
+                        : 'bg-dark-elevated'
+                    }`}>
+                      {player.emoji}
                     </div>
-                    <div className="flex gap-1.5 sm:gap-2 flex-shrink-0">
-                      <button onClick={() => handleToggleQuestion(q.id, q.isActive)} className={`px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs ${q.isActive ? 'bg-orange-500/20 text-orange-400' : 'bg-green-500/20 text-green-400'}`}>{q.isActive ? 'Hide' : 'Show'}</button>
-                      <button onClick={() => handleDeleteQuestion(q.id)} className="px-2 sm:px-3 py-1 rounded text-[10px] sm:text-xs bg-red-500/20 text-red-400">Del</button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {activeTab === 'votes' && stats && (
-            <div className="card p-4 sm:p-6">
-              <h3 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Votes per Question</h3>
-              <div className="space-y-2">
-                {questions.filter(q => q.isActive).map((q) => (
-                  <div key={q.id} className="flex items-center justify-between p-2.5 sm:p-3 bg-dark-elevated rounded-lg">
-                    <span className="text-xs sm:text-sm truncate flex-1 mr-2">Q{q.order}: {q.question.substring(0, 25)}...</span>
-                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-                      <span className="font-display text-lg sm:text-xl text-yellow-400">{stats.votesPerQuestion[q.id] || 0}</span>
-                      {(stats.votesPerQuestion[q.id] || 0) > 0 && (
-                        <button onClick={() => handleDeleteQuestionVotes(q.id)} className="px-2 py-1 rounded text-[10px] sm:text-xs bg-red-500/20 text-red-400">Clear</button>
+                    
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg">{player.name}</h3>
+                      {!isRevealed ? (
+                        <p className="text-zinc-500 text-xs sm:text-sm flex items-center gap-1.5">
+                          <Lock size={12} />
+                          Tap to reveal dirty secrets...
+                        </p>
+                      ) : (
+                        <p className="text-yellow-400 text-xs sm:text-sm flex items-center gap-1.5">
+                          <Flame size={12} />
+                          Roast unlocked!
+                        </p>
                       )}
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                    
+                    {/* Status Icon */}
+                    <div className="flex-shrink-0">
+                      {isRevealing ? (
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-500/20 flex items-center justify-center animate-pulse">
+                          <Flame size={18} className="text-red-400" />
+                        </div>
+                      ) : isRevealed ? (
+                        <div className="text-zinc-500">
+                          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-red-500/20 flex items-center justify-center">
+                          <Eye size={16} className="text-red-400" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                  
+                  {/* Revealed Content */}
+                  <AnimatePresence>
+                    {isRevealed && isExpanded && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="border-t border-white/5"
+                      >
+                        <div className="p-4 sm:p-5 space-y-4">
+                          {/* Roast */}
+                          {player.roast && (
+                            <div className="p-3 sm:p-4 bg-gradient-to-br from-red-500/10 to-orange-500/10 border border-red-500/20 rounded-xl">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Flame size={16} className="text-red-400" />
+                                <span className="text-[10px] sm:text-xs text-red-400 uppercase tracking-widest font-semibold">The Roast</span>
+                              </div>
+                              <p className="text-sm sm:text-base text-zinc-200">{player.roast}</p>
+                            </div>
+                          )}
+                          
+                          {/* Dirty Secret */}
+                          {player.dirtySecret && (
+                            <div className="p-3 sm:p-4 bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Skull size={16} className="text-purple-400" />
+                                <span className="text-[10px] sm:text-xs text-purple-400 uppercase tracking-widest font-semibold">Dirty Secret</span>
+                              </div>
+                              <p className="text-sm sm:text-base text-zinc-200">{player.dirtySecret}</p>
+                            </div>
+                          )}
+                          
+                          {/* Prediction */}
+                          {player.prediction && (
+                            <div className="p-3 sm:p-4 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-xl">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Star size={16} className="text-cyan-400" />
+                                <span className="text-[10px] sm:text-xs text-cyan-400 uppercase tracking-widest font-semibold">Future Prediction</span>
+                              </div>
+                              <p className="text-sm sm:text-base text-zinc-200">{player.prediction}</p>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
+              );
+            })}
+          </div>
+          
+          {/* Back Button */}
+          <div className="flex justify-center mt-6 sm:mt-8">
+            <button
+              onClick={() => router.push('/')}
+              className="px-6 py-3 rounded-full bg-dark-card border border-white/10 hover:border-purple-500/50 transition-all text-sm sm:text-base"
+            >
+              ← Back to Home
+            </button>
+          </div>
         </div>
       </div>
+      
+      <BottomNav />
     </>
   );
 }
 EOF
 
-echo "   ✅ Admin dashboard updated"
+echo "   ✅ Roasts page created"
 
 # ================================================================
-# 3. CLEAR CACHE
+# 5. UPDATE: GameConfig Model
 # ================================================================
-echo "3️⃣ Clearing cache..."
+echo "5️⃣ Updating GameConfig model..."
+
+cat > lib/models/GameConfig.ts << 'EOF'
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IGameConfig extends Document {
+  title: string;
+  subtitle: string;
+  tagline: string;
+  date: string;
+  groomName: string;
+  welcomeMessage: string;
+  isGameActive: boolean;
+  currentQuestion: number;
+  roastsRevealed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const GameConfigSchema = new Schema<IGameConfig>({
+  title: { type: String, required: true },
+  subtitle: { type: String },
+  tagline: { type: String },
+  date: { type: String },
+  groomName: { type: String },
+  welcomeMessage: { type: String },
+  isGameActive: { type: Boolean, default: true },
+  currentQuestion: { type: Number, default: 0 },
+  roastsRevealed: { type: Boolean, default: false },
+}, { timestamps: true });
+
+export const GameConfigModel = mongoose.models.GameConfig || mongoose.model<IGameConfig>('GameConfig', GameConfigSchema);
+EOF
+
+echo "   ✅ GameConfig model updated"
+
+# ================================================================
+# 6. UPDATE: Admin - Add Roast Controls
+# ================================================================
+echo "6️⃣ Adding roast controls to admin..."
+
+# We'll add a simple section to the database tab in admin
+# The full admin update is complex, so we'll create a simple roast control component
+
+cat > app/api/admin/roasts/route.ts << 'EOF'
+import { NextResponse } from 'next/server';
+import dbConnect from '@/lib/mongodb';
+import { GameConfigModel } from '@/lib/models';
+
+// GET - Get roast status
+export async function GET() {
+  try {
+    await dbConnect();
+    const config = await GameConfigModel.findOne();
+    return NextResponse.json({
+      roastsRevealed: config?.roastsRevealed || false,
+    });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  }
+}
+
+// POST - Toggle roast reveal
+export async function POST(request: Request) {
+  try {
+    await dbConnect();
+    const body = await request.json();
+    const { password, reveal } = body;
+    
+    if (password !== (process.env.ADMIN_PASSWORD || 'yash2025')) {
+      return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+    }
+    
+    await GameConfigModel.updateOne({}, { $set: { roastsRevealed: reveal } });
+    
+    return NextResponse.json({
+      success: true,
+      roastsRevealed: reveal,
+      message: reveal ? '🔥 All roasts revealed!' : '🙈 All roasts hidden!',
+    });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+  }
+}
+EOF
+
+echo "   ✅ Admin roasts API created"
+
+# ================================================================
+# 7. UPDATE: Header - Add Roasts link to menu
+# ================================================================
+echo "7️⃣ Updating Header with Roasts link..."
+
+cat > components/Header.tsx << 'EOF'
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Menu, X, Gamepad2 } from 'lucide-react';
+import { useState } from 'react';
+
+interface HeaderProps {
+  title?: string;
+  subtitle?: string;
+}
+
+export default function Header({ title = "YASH'S BACHELOR", subtitle = "Brutal Awards 2025" }: HeaderProps) {
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  
+  const showPlayButton = pathname !== '/game';
+  
+  return (
+    <>
+      <header className="fixed top-0 left-0 right-0 z-50 safe-area-top">
+        <div className="glass border-b border-white/5">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg sm:rounded-xl flex items-center justify-center text-base sm:text-lg shadow-lg flex-shrink-0">
+                👑
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="font-display text-base sm:text-lg gradient-text leading-none">{title}</h1>
+                <p className="text-[10px] sm:text-xs text-zinc-500 uppercase tracking-wider">{subtitle}</p>
+              </div>
+            </Link>
+            
+            {/* Desktop Navigation - Centered */}
+            <nav className="hidden md:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2">
+              {[
+                { href: '/', label: 'Home' },
+                { href: '/game', label: 'Play' },
+                { href: '/leaderboard', label: 'Leaderboard' },
+                { href: '/roasts', label: '🔥 Roasts' },
+              ].map((item) => (
+                <Link 
+                  key={item.href}
+                  href={item.href} 
+                  className={`text-sm font-medium transition-colors py-2 ${
+                    pathname === item.href 
+                      ? 'text-yellow-400' 
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+            
+            {/* Right Side */}
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              {showPlayButton && (
+                <Link 
+                  href="/game"
+                  className="hidden md:flex btn-gold px-4 py-2 rounded-full text-sm font-semibold items-center gap-2"
+                >
+                  <Gamepad2 size={16} />
+                  Play Now
+                </Link>
+              )}
+              
+              {showPlayButton && (
+                <Link 
+                  href="/game"
+                  className="md:hidden w-9 h-9 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-black"
+                >
+                  <Gamepad2 size={18} />
+                </Link>
+              )}
+              
+              <button 
+                onClick={() => setMenuOpen(!menuOpen)}
+                className="md:hidden w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-white rounded-lg hover:bg-white/5"
+              >
+                {menuOpen ? <X size={22} /> : <Menu size={22} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      
+      {/* Mobile Menu Overlay */}
+      {menuOpen && (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setMenuOpen(false)} />
+          <nav className="absolute top-16 right-3 left-3 bg-dark-card border border-white/10 rounded-2xl p-3 space-y-1 shadow-2xl">
+            {[
+              { href: '/', label: '🏠 Home', desc: 'Back to start' },
+              { href: '/game', label: '🎮 Play Game', desc: 'Vote now' },
+              { href: '/leaderboard', label: '📊 Leaderboard', desc: 'See all results' },
+              { href: '/roasts', label: '🔥 Roasts', desc: 'Dirty secrets revealed' },
+              { href: '/clear', label: '🧹 Reset My Votes', desc: 'Start fresh' },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
+                  pathname === item.href 
+                    ? 'bg-yellow-500/20 text-yellow-400' 
+                    : 'text-zinc-300 hover:bg-white/5 active:bg-white/10'
+                }`}
+              >
+                <span className="text-xl">{item.label.split(' ')[0]}</span>
+                <div>
+                  <p className="font-medium text-sm">{item.label.split(' ').slice(1).join(' ')}</p>
+                  <p className="text-xs text-zinc-500">{item.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </nav>
+        </div>
+      )}
+    </>
+  );
+}
+EOF
+
+echo "   ✅ Header updated with Roasts link"
+
+# ================================================================
+# 8. UPDATE: Bottom Nav - Add Roasts
+# ================================================================
+echo "8️⃣ Updating Bottom Nav..."
+
+cat > components/BottomNav.tsx << 'EOF'
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Home, Gamepad2, BarChart3, Flame } from 'lucide-react';
+
+export default function BottomNav() {
+  const pathname = usePathname();
+  
+  const navItems = [
+    { href: '/', icon: Home, label: 'Home' },
+    { href: '/game', icon: Gamepad2, label: 'Play' },
+    { href: '/leaderboard', icon: BarChart3, label: 'Board' },
+    { href: '/roasts', icon: Flame, label: 'Roasts' },
+  ];
+  
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden safe-area-bottom">
+      <div className="glass border-t border-white/5">
+        <div className="flex items-center justify-around py-1.5 px-2">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
+            
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all min-w-[60px] ${
+                  isActive 
+                    ? item.href === '/roasts' ? 'text-red-400' : 'text-yellow-400'
+                    : 'text-zinc-500 active:text-white'
+                }`}
+              >
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-[9px] font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </nav>
+  );
+}
+EOF
+
+echo "   ✅ Bottom nav updated"
+
+# ================================================================
+# 9. CLEAR CACHE
+# ================================================================
+echo "9️⃣ Clearing cache..."
 
 rm -rf .next
 
@@ -1043,25 +1119,27 @@ echo "   ✅ Cache cleared"
 # DONE
 # ================================================================
 echo ""
-echo "========================"
-echo "✅ Seed API Created!"
-echo "========================"
+echo "=============================="
+echo "✅ Roast Profiles Created!"
+echo "=============================="
 echo ""
-echo "🌱 New Features:"
+echo "🔥 New Features:"
 echo ""
-echo "   📍 Seed API: /api/admin/seed"
-echo "      GET  - Preview seed data"
-echo "      POST - Seed database"
+echo "   📍 /roasts - Roast Profiles page"
+echo "   📍 /api/roasts - Roasts API"
+echo "   📍 /api/admin/roasts - Admin control"
 echo ""
-echo "   🛡️ Admin Dashboard > Database Tab"
-echo "      - New '🌱 Seed Default Data' button"
-echo "      - Clears all + seeds fresh data"
+echo "   Each player has:"
+echo "   • 🔥 The Roast - Brutal truth"
+echo "   • 💀 Dirty Secret - Embarrassing fact"
+echo "   • ⭐ Future Prediction - Where they'll end up"
 echo ""
-echo "   📦 What Gets Seeded:"
-echo "      - 11 Players (Mohsin, Yash, etc.)"
-echo "      - 10 Questions (all types)"
-echo "      - Game Config"
-echo "      - Game Session (3 min timer)"
+echo "   Hidden by default!"
+echo "   • Users tap to reveal individual profiles"
+echo "   • Admin can reveal ALL at once"
+echo ""
+echo "⚠️  IMPORTANT: Run seed again to add roasts!"
+echo "   Go to /admin > DB tab > 🌱 Seed Default Data"
 echo ""
 echo "Now run: npm run dev"
 echo ""

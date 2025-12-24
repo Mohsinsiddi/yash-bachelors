@@ -38,6 +38,7 @@ export default function Header({ title = "YASH'S BACHELOR", subtitle = "Brutal A
                 { href: '/', label: 'Home' },
                 { href: '/game', label: 'Play' },
                 { href: '/leaderboard', label: 'Leaderboard' },
+                { href: '/roasts', label: '🔥 Roasts' },
               ].map((item) => (
                 <Link 
                   key={item.href}
@@ -55,7 +56,6 @@ export default function Header({ title = "YASH'S BACHELOR", subtitle = "Brutal A
             
             {/* Right Side */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              {/* Play Button - Desktop */}
               {showPlayButton && (
                 <Link 
                   href="/game"
@@ -66,7 +66,6 @@ export default function Header({ title = "YASH'S BACHELOR", subtitle = "Brutal A
                 </Link>
               )}
               
-              {/* Play Button - Mobile (icon only) */}
               {showPlayButton && (
                 <Link 
                   href="/game"
@@ -76,7 +75,6 @@ export default function Header({ title = "YASH'S BACHELOR", subtitle = "Brutal A
                 </Link>
               )}
               
-              {/* Mobile Menu Button */}
               <button 
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="md:hidden w-9 h-9 flex items-center justify-center text-zinc-400 hover:text-white rounded-lg hover:bg-white/5"
@@ -97,6 +95,7 @@ export default function Header({ title = "YASH'S BACHELOR", subtitle = "Brutal A
               { href: '/', label: '🏠 Home', desc: 'Back to start' },
               { href: '/game', label: '🎮 Play Game', desc: 'Vote now' },
               { href: '/leaderboard', label: '📊 Leaderboard', desc: 'See all results' },
+              { href: '/roasts', label: '🔥 Roasts', desc: 'Dirty secrets revealed' },
               { href: '/clear', label: '🧹 Reset My Votes', desc: 'Start fresh' },
             ].map((item) => (
               <Link

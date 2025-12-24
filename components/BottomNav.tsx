@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Gamepad2, BarChart3 } from 'lucide-react';
+import { Home, Gamepad2, BarChart3, Flame } from 'lucide-react';
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -10,7 +10,8 @@ export default function BottomNav() {
   const navItems = [
     { href: '/', icon: Home, label: 'Home' },
     { href: '/game', icon: Gamepad2, label: 'Play' },
-    { href: '/leaderboard', icon: BarChart3, label: 'Leaderboard' },
+    { href: '/leaderboard', icon: BarChart3, label: 'Board' },
+    { href: '/roasts', icon: Flame, label: 'Roasts' },
   ];
   
   return (
@@ -25,14 +26,14 @@ export default function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-0.5 px-4 py-2 rounded-xl transition-all min-w-[70px] ${
+                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all min-w-[60px] ${
                   isActive 
-                    ? 'text-yellow-400' 
+                    ? item.href === '/roasts' ? 'text-red-400' : 'text-yellow-400'
                     : 'text-zinc-500 active:text-white'
                 }`}
               >
-                <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{item.label}</span>
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span className="text-[9px] font-medium">{item.label}</span>
               </Link>
             );
           })}

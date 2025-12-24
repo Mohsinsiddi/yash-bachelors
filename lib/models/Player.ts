@@ -1,13 +1,25 @@
-import mongoose, { Schema, Model } from 'mongoose';
-import { Player } from '@/types';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const PlayerSchema = new Schema<Player>({
+export interface IPlayer extends Document {
+  id: number;
+  name: string;
+  emoji: string;
+  isActive: boolean;
+  roast?: string;
+  dirtySecret?: string;
+  prediction?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const PlayerSchema = new Schema<IPlayer>({
   id: { type: Number, required: true, unique: true },
   name: { type: String, required: true },
-  emoji: { type: String, required: true },
+  emoji: { type: String, default: '😀' },
   isActive: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now },
-});
+  roast: { type: String },
+  dirtySecret: { type: String },
+  prediction: { type: String },
+}, { timestamps: true });
 
-export const PlayerModel: Model<Player> = 
-  mongoose.models.Player || mongoose.model<Player>('Player', PlayerSchema);
+export const PlayerModel = mongoose.models.Player || mongoose.model<IPlayer>('Player', PlayerSchema);

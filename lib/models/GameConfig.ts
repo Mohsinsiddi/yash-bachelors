@@ -1,18 +1,29 @@
-import mongoose, { Schema, Model } from 'mongoose';
-import { GameConfig } from '@/types';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const GameConfigSchema = new Schema<GameConfig>({
-  title: { type: String, default: "YASH'S BACHELOR" },
-  subtitle: { type: String, default: "Brutal Awards 2025" },
-  tagline: { type: String, default: "Where friendships are tested & legends are made" },
-  date: { type: String, default: "25th - 28th December 2025" },
-  groomName: { type: String, default: "Yash" },
-  welcomeMessage: { type: String, default: "Welcome to the most brutal game of the bachelor party! 🎉" },
+export interface IGameConfig extends Document {
+  title: string;
+  subtitle: string;
+  tagline: string;
+  date: string;
+  groomName: string;
+  welcomeMessage: string;
+  isGameActive: boolean;
+  currentQuestion: number;
+  roastsRevealed: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const GameConfigSchema = new Schema<IGameConfig>({
+  title: { type: String, required: true },
+  subtitle: { type: String },
+  tagline: { type: String },
+  date: { type: String },
+  groomName: { type: String },
+  welcomeMessage: { type: String },
   isGameActive: { type: Boolean, default: true },
   currentQuestion: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+  roastsRevealed: { type: Boolean, default: false },
+}, { timestamps: true });
 
-export const GameConfigModel: Model<GameConfig> = 
-  mongoose.models.GameConfig || mongoose.model<GameConfig>('GameConfig', GameConfigSchema);
+export const GameConfigModel = mongoose.models.GameConfig || mongoose.model<IGameConfig>('GameConfig', GameConfigSchema);

@@ -9,21 +9,109 @@ import {
 } from '@/lib/models';
 
 // ================================================================
-// SEED DATA
+// SEED DATA WITH ROASTS
 // ================================================================
 
 const players = [
-  { id: 1, name: "Mohsin", emoji: "😎", isActive: true },
-  { id: 2, name: "Ganesh", emoji: "🔥", isActive: true },
-  { id: 3, name: "Amit", emoji: "💪", isActive: true },
-  { id: 4, name: "JP", emoji: "🎯", isActive: true },
-  { id: 5, name: "Akash", emoji: "⚡", isActive: true },
-  { id: 6, name: "Toran", emoji: "🌟", isActive: true },
-  { id: 7, name: "Anup", emoji: "🎭", isActive: true },
-  { id: 8, name: "Sambit", emoji: "🚀", isActive: true },
-  { id: 9, name: "Yash", emoji: "👑", isActive: true },
-  { id: 10, name: "Bhalu", emoji: "🐻", isActive: true },
-  { id: 11, name: "Vishal", emoji: "💎", isActive: true },
+  { 
+    id: 1, 
+    name: "Mohsin", 
+    emoji: "😎", 
+    isActive: true,
+    roast: "Claims to be a blockchain developer, but the only chain he's mastered is the one attached to his wallet... which is always empty. 💸",
+    dirtySecret: "Once googled 'how to mass produce money' for 3 hours straight. FBI is still watching. 🕵️",
+    prediction: "Will become a crypto billionaire... in Monopoly money. 🎲"
+  },
+  { 
+    id: 2, 
+    name: "Ganesh", 
+    emoji: "🔥", 
+    isActive: true,
+    roast: "The only thing hotter than his name is his browser history. Incognito mode? More like 'Ganesh Mode'. 🔥",
+    dirtySecret: "Has a secret folder named 'Tax Documents 2019' that has never seen a tax document. 📁",
+    prediction: "Will marry his laptop. The wedding will be in private browsing. 💒"
+  },
+  { 
+    id: 3, 
+    name: "Amit", 
+    emoji: "💪", 
+    isActive: true,
+    roast: "Gym bro who thinks protein shake is a personality trait. His muscles are big but his texts are always 'K'. 💪",
+    dirtySecret: "Flexes in every reflective surface including spoons. Has been caught kissing his biceps. 😘",
+    prediction: "Will open a gym where the only exercise is taking selfies. 🤳"
+  },
+  { 
+    id: 4, 
+    name: "JP", 
+    emoji: "🎯", 
+    isActive: true,
+    roast: "JP stands for 'Just Pretending' to know what's going on. Nods confidently at everything. 🎯",
+    dirtySecret: "Once said 'I love that song' to a ringtone. Has been faking music taste for 10 years. 🎵",
+    prediction: "Will become a professional nodder. Companies will pay him to agree in meetings. 👔"
+  },
+  { 
+    id: 5, 
+    name: "Akash", 
+    emoji: "⚡", 
+    isActive: true,
+    roast: "Named after the sky but his standards are underground. Would swipe right on a potato if it had a filter. ⚡",
+    dirtySecret: "Has a Tinder gold subscription and still gets no matches. Blames the algorithm. 📱",
+    prediction: "Will finally get a match... with his alternate account. Self-love is important! 💕"
+  },
+  { 
+    id: 6, 
+    name: "Toran", 
+    emoji: "🌟", 
+    isActive: true,
+    roast: "The 'intellectual' of the group who quotes philosophers but can't cook Maggi without burning it. 🌟",
+    dirtySecret: "Reads book summaries on YouTube and says 'I read this amazing book'. Hasn't finished a book since 2015. 📚",
+    prediction: "Will start a podcast that only his mom listens to. She'll leave 5-star reviews. ⭐"
+  },
+  { 
+    id: 7, 
+    name: "Anup", 
+    emoji: "🎭", 
+    isActive: true,
+    roast: "The drama king who treats every minor inconvenience like a Netflix original series. 🎭",
+    dirtySecret: "Cried during a phone ad. Not even the sad part, just when they showed the price. 😢",
+    prediction: "Will win an Oscar for 'Best Performance of Being Fine When Not Fine'. 🏆"
+  },
+  { 
+    id: 8, 
+    name: "Sambit", 
+    emoji: "🚀", 
+    isActive: true,
+    roast: "Always talking about his 'startup ideas' but the only thing he's started is arguments. 🚀",
+    dirtySecret: "Has 47 domain names registered and 0 working websites. Calls himself a 'serial entrepreneur'. 💼",
+    prediction: "Will pivot his startup 15 times and end up selling samosas. The samosas will be successful. 🥟"
+  },
+  { 
+    id: 9, 
+    name: "Yash", 
+    emoji: "👑", 
+    isActive: true,
+    roast: "The groom who's about to lose his freedom faster than he loses his hair. Marriage is just multiplayer suffering. 👑",
+    dirtySecret: "Has already practiced saying 'Yes dear' 10,000 times. His wife doesn't know he's this prepared. 💍",
+    prediction: "Will become the world champion of 'I was just about to do that!' 🏅"
+  },
+  { 
+    id: 10, 
+    name: "Bhalu", 
+    emoji: "🐻", 
+    isActive: true,
+    roast: "Named Bhalu because he hibernates through every group plan. Legendary for the phrase 'Next time pakka'. 🐻",
+    dirtySecret: "Has cancelled plans so many times that his friends now make fake plans just to get a real rejection. 🗓️",
+    prediction: "Will write a bestseller: '101 Excuses to Not Show Up'. Chapter 1: 'Mummy ne mana kiya'. 📖"
+  },
+  { 
+    id: 11, 
+    name: "Vishal", 
+    emoji: "💎", 
+    isActive: true,
+    roast: "The 'premium' friend who judges everyone's taste while wearing the same 3 shirts on rotation. 💎",
+    dirtySecret: "Gives relationship advice but his last relationship was with a body pillow. It ended badly. 🛏️",
+    prediction: "Will become a fashion influencer with 12 followers. 11 of them are his relatives. 👗"
+  },
 ];
 
 const questions = [
@@ -270,13 +358,13 @@ const gameConfig = {
   welcomeMessage: "Welcome to the most brutal game of the bachelor party! Vote wisely, because every vote counts... and twists await! 🎉",
   isGameActive: true,
   currentQuestion: 0,
+  roastsRevealed: false,
 };
 
 // ================================================================
 // API HANDLERS
 // ================================================================
 
-// GET - Get seed data preview
 export async function GET() {
   return NextResponse.json({
     preview: {
@@ -292,14 +380,12 @@ export async function GET() {
   });
 }
 
-// POST - Seed the database
 export async function POST(request: Request) {
   try {
     await dbConnect();
     const body = await request.json();
     const { password, clearFirst = true } = body;
     
-    // Password protection
     const adminPassword = process.env.ADMIN_PASSWORD || 'yash2025';
     if (password !== adminPassword) {
       return NextResponse.json({ error: 'Invalid admin password' }, { status: 401 });
@@ -310,7 +396,6 @@ export async function POST(request: Request) {
       seeded: {},
     };
     
-    // Clear existing data if requested
     if (clearFirst) {
       const [p, q, v, c, s] = await Promise.all([
         PlayerModel.deleteMany({}),
@@ -329,19 +414,15 @@ export async function POST(request: Request) {
       };
     }
     
-    // Seed players
     await PlayerModel.insertMany(players);
     result.seeded.players = players.length;
     
-    // Seed questions
     await QuestionModel.insertMany(questions);
     result.seeded.questions = questions.length;
     
-    // Seed config
     await GameConfigModel.create(gameConfig);
     result.seeded.config = 1;
     
-    // Seed session
     await GameSessionModel.create({
       sessionId: 'main',
       currentQuestionId: 1,
